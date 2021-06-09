@@ -1,0 +1,6 @@
+{
+	"appId": "io.ionic.starter",
+	"appName": "epa-review-frontend",
+	"webDir": "build",
+	"bundledWebRuntime": false
+}

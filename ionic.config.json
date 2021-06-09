@@ -1,0 +1,7 @@
+{
+  "name": "epa-review-frontend",
+  "integrations": {
+    "capacitor": {}
+  },
+  "type": "react"
+}
