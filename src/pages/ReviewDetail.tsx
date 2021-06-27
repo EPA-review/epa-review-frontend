@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import ServerInfo from '../utils/ServerInfo';
 
-import './ReviewDetail.css';
+import styles from './ReviewDetail.module.css';
 
 type EpaFeedback = { originalText: string, anonmymizedText: string };
 
@@ -49,12 +49,12 @@ const Dashboard: React.FC = () => {
               data.map(({ originalText, anonmymizedText }, i) => (
                 <IonRow key={i}>
                   <IonCol>
-                    <IonCard className="card">
+                    <IonCard className={styles.card}>
                       <IonCardContent>{originalText}</IonCardContent>
                     </IonCard>
                   </IonCol>
                   <IonCol>
-                    <IonCard className="card">
+                    <IonCard className={styles.card}>
                       <IonCardContent>{anonmymizedText}</IonCardContent>
                     </IonCard>
                   </IonCol>

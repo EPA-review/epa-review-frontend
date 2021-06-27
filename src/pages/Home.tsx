@@ -7,7 +7,7 @@ import { useHistory } from 'react-router';
 import ServerInfo from '../utils/ServerInfo';
 import { User } from '../utils/User';
 
-import './Home.css';
+import styles from './Home.module.css';
 
 const Home: React.FC = () => {
   const history = useHistory();
@@ -40,7 +40,7 @@ const Home: React.FC = () => {
   return (
     <IonPage>
       <IonContent fullscreen>
-        <IonCard id="sign-in-card">
+        <IonCard id={styles.card}>
           <IonCardContent>
             <IonCardHeader>
               <IonImg src="/assets/icon/icon.png"></IonImg>

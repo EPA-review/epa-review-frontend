@@ -5,7 +5,7 @@ import { useState } from 'react';
 import MainMenu from '../components/MainMenu';
 import ServerInfo from '../utils/ServerInfo';
 
-import './Upload.css';
+import styles from './Upload.module.css';
 
 const Upload: React.FC = () => {
   const [file, setFile] = useState<File>();
@@ -45,7 +45,7 @@ const Upload: React.FC = () => {
           onDidDismiss={() => setShowLoading(false)}
           message={'Uploading...'}
         />
-        <IonCard className="card">
+        <IonCard className={styles.card}>
           <IonCardHeader>
             <IonCardTitle>Upload your CSV file.</IonCardTitle>
           </IonCardHeader>
@@ -67,7 +67,7 @@ const Upload: React.FC = () => {
             <IonText>{`${file ? `${file.name} - ${data ? `${data.length} Records` : 'Not Loaded'}` : ''}`}</IonText>
           </IonCardContent>
         </IonCard>
-        <IonCard className="card" disabled={!(file && data)}>
+        <IonCard className={styles.card} disabled={!(file && data)}>
           <IonCardHeader>
             <IonCardTitle>Preview your data and config the name of <b>Feedback</b> field.</IonCardTitle>
           </IonCardHeader>
@@ -114,7 +114,7 @@ const Upload: React.FC = () => {
             >Looks Good</IonButton>
           </IonCardContent>
         </IonCard>
-        <IonCard className="card" disabled={!(file && data && isDataLookingGood)}>
+        <IonCard className={styles.card} disabled={!(file && data && isDataLookingGood)}>
           <IonCardHeader>
             <IonCardTitle>Set a group tag name.</IonCardTitle>
           </IonCardHeader>
@@ -150,7 +150,7 @@ const Upload: React.FC = () => {
             >Looks Good</IonButton>
           </IonCardContent>
         </IonCard>
-        <IonCard className="card" disabled={!(file && data && isDataLookingGood && isGroupTagLookingGood)}>
+        <IonCard className={styles.card} disabled={!(file && data && isDataLookingGood && isGroupTagLookingGood)}>
           <IonCardHeader>
             <IonCardTitle>Process your data.</IonCardTitle>
           </IonCardHeader>
