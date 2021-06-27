@@ -15,7 +15,7 @@ const Review: React.FC = () => {
   useEffect(() => {
     async function obtainUser() {
       const response = await fetch(
-        `${ServerInfo.ENDPOINT}/user/me`,
+        `${ServerInfo.SERVER_BASE_URL}/user/me`,
         { credentials: 'include' }
       );
       let user: User;
@@ -64,7 +64,7 @@ async function signOut(
   history: History
 ) {
   await fetch(
-    `${ServerInfo.ENDPOINT}/authentication/sign-out`,
+    `${ServerInfo.SERVER_BASE_URL}/authentication/sign-out`,
     {
       method: 'POST',
       credentials: 'include'

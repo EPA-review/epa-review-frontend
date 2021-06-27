@@ -27,7 +27,7 @@ const Home: React.FC = () => {
   useEffect(() => {
     async function redirectIfAlreadySignedIn() {
       const response = await fetch(
-        `${ServerInfo.ENDPOINT}/user/me`,
+        `${ServerInfo.SERVER_BASE_URL}/user/me`,
         { credentials: 'include' }
       );
       if (response.ok && (await response.json())._id) {
@@ -95,7 +95,7 @@ async function signIn(
   setUserInfo: (userInfo: User) => void
 ) {
   const response = await fetch(
-    `${ServerInfo.ENDPOINT}/authentication/sign-in`,
+    `${ServerInfo.SERVER_BASE_URL}/authentication/sign-in`,
     {
       method: 'POST',
       credentials: 'include',
@@ -123,7 +123,7 @@ async function signUp(
   setIsSigningUp: (isSigningUp: boolean) => void
 ) {
   const response = await fetch(
-    `${ServerInfo.ENDPOINT}/authentication/sign-up`,
+    `${ServerInfo.SERVER_BASE_URL}/authentication/sign-up`,
     {
       method: 'POST',
       headers: {

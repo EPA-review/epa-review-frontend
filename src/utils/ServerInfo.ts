@@ -1,4 +1,3 @@
 export default class ServerInfo {
-    // TODO move the API path into a config file
-    static readonly ENDPOINT = '/api';
+    static readonly SERVER_BASE_URL = process.env.REACT_APP_SERVER_BASE_URL;
 }
