@@ -24,6 +24,7 @@ import './theme/variables.css';
 import Review from './pages/Review';
 import Upload from './pages/Upload';
 import Dashboard from './pages/Dashboard';
+import ReviewDetail from './pages/ReviewDetail';
 
 const App: React.FC = () => (
   <IonApp>
@@ -40,6 +41,9 @@ const App: React.FC = () => (
         </Route>
         <Route exact path="/review">
           <Review />
+        </Route>
+        <Route exact path="/review/:groupTag">
+          <ReviewDetail />
         </Route>
         <Route exact path="/dashboard">
           <Dashboard />

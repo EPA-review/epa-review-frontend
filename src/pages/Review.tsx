@@ -1,4 +1,4 @@
-import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonPage, IonTitle, IonToolbar, useIonPopover } from '@ionic/react';
+import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonItem, IonPage, IonTitle, IonToolbar, useIonPopover } from '@ionic/react';
 import { History } from 'history';
 import { apps, person } from "ionicons/icons";
 import { useEffect, useState } from 'react';
@@ -10,7 +10,8 @@ import { User } from '../utils/User';
 const Review: React.FC = () => {
   const history = useHistory();
   const [userInfo, setUserInfo] = useState<User>({});
-  const [presentPopover, dismiss] = useIonPopover(MainMenu, { onHide: () => dismiss() });
+  const [groupTags, setGroupTags] = useState<string[]>();
+  const [presentPopover, dismissPopover] = useIonPopover(MainMenu, { onHide: () => dismissPopover() });
 
   useEffect(() => {
     async function obtainUser() {
@@ -26,6 +27,18 @@ const Review: React.FC = () => {
       }
     }
     obtainUser();
+
+    async function obtainGroupTags() {
+      const response = await fetch(
+        `${ServerInfo.SERVER_BASE_URL}/epa/group-tags`,
+        { credentials: 'include' }
+      );
+      let groupTags: string[];
+      if (response.ok && (groupTags = await response.json())) {
+        setGroupTags(groupTags);
+      }
+    }
+    obtainGroupTags();
   }, [history]);
 
   return (
@@ -40,7 +53,7 @@ const Review: React.FC = () => {
               <IonIcon slot="icon-only" icon={apps}></IonIcon>
             </IonButton>
           </IonButtons>
-          <IonTitle>EPA Review</IonTitle>
+          <IonTitle>EPA Review - Hello {userInfo.username}!</IonTitle>
           <IonButtons slot="end">
             <IonButton
               title="Sign Out"
@@ -52,7 +65,13 @@ const Review: React.FC = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent fullscreen>
-        <h1>Hello {userInfo.username}!</h1>
+        {
+          groupTags ?
+            groupTags.map(groupTag => (
+              <IonItem key={groupTag} button routerLink={`/review/${groupTag}`}>{groupTag}</IonItem>
+            )) :
+            'No Data Yet'
+        }
       </IonContent>
     </IonPage>
   );
