@@ -39,7 +39,7 @@ const Upload: React.FC = () => {
           </IonButtons>
         </IonToolbar>
       </IonHeader>
-      <IonContent fullscreen>
+      <IonContent>
         <IonLoading
           isOpen={showLoading}
           onDidDismiss={() => setShowLoading(false)}

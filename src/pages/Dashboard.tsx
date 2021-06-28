@@ -25,7 +25,7 @@ const Dashboard: React.FC = () => {
           </IonButtons>
         </IonToolbar>
       </IonHeader>
-      <IonContent fullscreen>
+      <IonContent>
         <h1>EPA Upload page works!</h1>
       </IonContent>
     </IonPage>

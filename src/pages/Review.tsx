@@ -64,7 +64,7 @@ const Review: React.FC = () => {
           </IonButtons>
         </IonToolbar>
       </IonHeader>
-      <IonContent fullscreen>
+      <IonContent>
         {
           groupTags ?
             groupTags.map(groupTag => (

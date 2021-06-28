@@ -42,7 +42,7 @@ const Dashboard: React.FC = () => {
           </IonButtons>
         </IonToolbar>
       </IonHeader>
-      <IonContent fullscreen>
+      <IonContent>
         <IonGrid>
           {
             data ?

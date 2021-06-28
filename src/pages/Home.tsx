@@ -39,7 +39,7 @@ const Home: React.FC = () => {
 
   return (
     <IonPage>
-      <IonContent fullscreen>
+      <IonContent>
         <IonCard id={styles.card}>
           <IonCardContent>
             <IonCardHeader>
