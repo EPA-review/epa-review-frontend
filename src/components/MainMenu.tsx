@@ -1,7 +1,7 @@
 import { IonGrid, IonRow, IonCol, IonButton } from "@ionic/react";
 import React from "react";
 
-import './MainMenu.css';
+import styles from './MainMenu.module.css';
 
 const MainMenu: React.FC = () => {
   const items = [
@@ -17,7 +17,7 @@ const MainMenu: React.FC = () => {
           items.map((item, i) => (
             <IonCol key={i} size="auto">
               <IonButton
-                className="item-button"
+                className={styles['item-button']}
                 color="medium"
                 routerLink={convertNameToPath(item)}
               >{item}</IonButton>
