@@ -7,7 +7,7 @@ const MainMenu: React.FC = () => {
   const items = [
     'Upload',
     'Review',
-    'Dashboard'
+    // 'Dashboard'
   ];
 
   return (
