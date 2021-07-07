@@ -3,6 +3,7 @@ import { csvParse, DSVRowArray } from 'd3-dsv';
 import { apps, person } from "ionicons/icons";
 import { useState } from 'react';
 import MainMenu from '../components/MainMenu';
+import UserMenu from '../components/UserMenu';
 import { signOut } from '../utils/auth';
 import ServerInfo from '../utils/ServerInfo';
 
@@ -17,7 +18,8 @@ const Upload: React.FC = () => {
   const [isGroupTagLookingGood, setIsGroupTagLookingGood] = useState(false);
   const [hasFinished, setHasFinished] = useState(false);
 
-  const [present, dismiss] = useIonPopover(MainMenu, { onHide: () => dismiss() });
+  const [presentMainMenuPopover, dismissMainMenuPopover] = useIonPopover(MainMenu, { onHide: () => dismissMainMenuPopover() });
+  const [presentUserMenuPopover, dismissUserMenuPopover] = useIonPopover(UserMenu, { onHide: () => dismissUserMenuPopover() });
   const [showLoading, setShowLoading] = useState(false);
 
   return (
@@ -27,7 +29,7 @@ const Upload: React.FC = () => {
           <IonButtons slot="start">
             <IonButton
               title="Main Menu"
-              onClick={event => present({ event: event.nativeEvent })}
+              onClick={event => presentMainMenuPopover({ event: event.nativeEvent })}
             >
               <IonIcon slot="icon-only" icon={apps}></IonIcon>
             </IonButton>
@@ -35,8 +37,8 @@ const Upload: React.FC = () => {
           <IonTitle>EPA Upload</IonTitle>
           <IonButtons slot="end">
             <IonButton
-              title="Sign Out"
-              onClick={() => signOut()}
+              title="User"
+              onClick={event => presentUserMenuPopover({ event: event.nativeEvent })}
             >
               <IonIcon slot="icon-only" icon={person} ></IonIcon>
             </IonButton>

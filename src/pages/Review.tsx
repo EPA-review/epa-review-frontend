@@ -3,13 +3,15 @@ import { apps, person } from "ionicons/icons";
 import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
 import MainMenu from '../components/MainMenu';
+import UserMenu from '../components/UserMenu';
 import { signOut } from '../utils/auth';
 import ServerInfo from '../utils/ServerInfo';
 
 const Review: React.FC = () => {
   const history = useHistory();
   const [groupTags, setGroupTags] = useState<string[]>();
-  const [presentPopover, dismissPopover] = useIonPopover(MainMenu, { onHide: () => dismissPopover() });
+  const [presentMainMenuPopover, dismissMainMenuPopover] = useIonPopover(MainMenu, { onHide: () => dismissMainMenuPopover() });
+  const [presentUserMenuPopover, dismissUserMenuPopover] = useIonPopover(UserMenu, { onHide: () => dismissUserMenuPopover() });
 
   useEffect(() => {
     async function obtainGroupTags() {
@@ -32,7 +34,7 @@ const Review: React.FC = () => {
           <IonButtons slot="start">
             <IonButton
               title="Main Menu"
-              onClick={event => presentPopover({ event: event.nativeEvent })}
+              onClick={event => presentMainMenuPopover({ event: event.nativeEvent })}
             >
               <IonIcon slot="icon-only" icon={apps}></IonIcon>
             </IonButton>
@@ -40,8 +42,8 @@ const Review: React.FC = () => {
           <IonTitle>EPA Review</IonTitle>
           <IonButtons slot="end">
             <IonButton
-              title="Sign Out"
-              onClick={() => signOut()}
+              title="User"
+              onClick={event => presentUserMenuPopover({ event: event.nativeEvent })}
             >
               <IonIcon slot="icon-only" icon={person} ></IonIcon>
             </IonButton>
