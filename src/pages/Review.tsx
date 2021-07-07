@@ -1,31 +1,17 @@
 import { IonButton, IonButtons, IonContent, IonHeader, IonIcon, IonItem, IonPage, IonTitle, IonToolbar, useIonPopover } from '@ionic/react';
-import { History } from 'history';
 import { apps, person } from "ionicons/icons";
 import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
 import MainMenu from '../components/MainMenu';
+import { signOut } from '../utils/auth';
 import ServerInfo from '../utils/ServerInfo';
-import { User } from '../utils/User';
 
 const Review: React.FC = () => {
   const history = useHistory();
-  const [userInfo, setUserInfo] = useState<User>({});
   const [groupTags, setGroupTags] = useState<string[]>();
   const [presentPopover, dismissPopover] = useIonPopover(MainMenu, { onHide: () => dismissPopover() });
 
   useEffect(() => {
-    async function obtainUser() {
-      const response = await fetch(
-        `${ServerInfo.SERVER_BASE_URL}/user/me`,
-        { credentials: 'include' }
-      );
-      let user: User;
-      if (response.ok && (user = await response.json())) {
-        setUserInfo(user);
-      }
-    }
-    obtainUser();
-
     async function obtainGroupTags() {
       const response = await fetch(
         `${ServerInfo.SERVER_BASE_URL}/epa/group-tags`,
@@ -51,11 +37,11 @@ const Review: React.FC = () => {
               <IonIcon slot="icon-only" icon={apps}></IonIcon>
             </IonButton>
           </IonButtons>
-          <IonTitle>EPA Review - Hello {userInfo.username}!</IonTitle>
+          <IonTitle>EPA Review</IonTitle>
           <IonButtons slot="end">
             <IonButton
               title="Sign Out"
-              onClick={() => signOut(history)}
+              onClick={() => signOut()}
             >
               <IonIcon slot="icon-only" icon={person} ></IonIcon>
             </IonButton>
@@ -76,16 +62,3 @@ const Review: React.FC = () => {
 };
 
 export default Review;
-
-async function signOut(
-  history: History
-) {
-  await fetch(
-    `${ServerInfo.SERVER_BASE_URL}/authentication/sign-out`,
-    {
-      method: 'POST',
-      credentials: 'include'
-    }
-  );
-  window.location.reload();
-}

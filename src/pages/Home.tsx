@@ -1,10 +1,9 @@
 import { AlertOptions } from '@ionic/core';
 import { AlertButton, IonButton, IonCard, IonCardContent, IonCardHeader, IonContent, IonImg, IonInput, IonItem, IonLabel, IonPage, useIonAlert } from '@ionic/react';
 import { HookOverlayOptions } from '@ionic/react/dist/types/hooks/HookOverlayOptions';
-import { History } from 'history';
-import { useEffect, useState } from 'react';
+import { useState } from 'react';
 import { useHistory } from 'react-router';
-import ServerInfo from '../utils/ServerInfo';
+import { signIn as authSignIn } from '../utils/auth';
 import { User } from '../utils/User';
 
 import styles from './Home.module.css';
@@ -30,7 +29,7 @@ const Home: React.FC = () => {
             </IonCardHeader>
             <form onSubmit={event => {
               event.preventDefault();
-              signIn(userInfo, history, presentAlert, setUserInfo);
+              signIn(userInfo, presentAlert, setUserInfo);
             }}>
               {
                 inputs.map((input, i) => (
@@ -65,25 +64,10 @@ export default Home;
 
 async function signIn(
   userInfo: User,
-  history: History,
   presentAlert: { (message: string, buttons?: AlertButton[] | undefined): void; (options: AlertOptions & HookOverlayOptions): void; },
   setUserInfo: (userInfo: User) => void
 ) {
-  const response = await fetch(
-    `${ServerInfo.SERVER_BASE_URL}/authentication/sign-in`,
-    {
-      method: 'POST',
-      credentials: 'include',
-      headers: {
-        'Content-type': 'application/json'
-      },
-      body: JSON.stringify({
-        username: userInfo.username,
-        authenticationHash: userInfo.authenticationHash
-      })
-    }
-  );
-  if (response.ok) {
+  if (await authSignIn(userInfo)) {
     window.location.reload();
   } else {
     presentAlert('Fail to sign in.', [{ text: 'OK' }]);

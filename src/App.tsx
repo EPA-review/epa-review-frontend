@@ -27,7 +27,7 @@ import Dashboard from './pages/Dashboard';
 import ReviewDetail from './pages/ReviewDetail';
 import { useEffect, useState } from 'react';
 import { applyTheme, getActualTheme } from './utils/theme';
-import { determineIfSignedIn } from './utils/auth';
+import { fetchUser } from './utils/auth';
 
 const App: React.FC = () => {
   const theme = getActualTheme();
@@ -39,7 +39,7 @@ const App: React.FC = () => {
 
   useEffect(() => {
     async function generateRouterOutlet() {
-      const hasSignedIn = await determineIfSignedIn();
+      const hasSignedIn = await fetchUser();
       setRouterOutlet((
         <IonRouterOutlet>
           <Route exact path="/">

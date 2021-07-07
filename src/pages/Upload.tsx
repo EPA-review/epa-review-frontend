@@ -3,6 +3,7 @@ import { csvParse, DSVRowArray } from 'd3-dsv';
 import { apps, person } from "ionicons/icons";
 import { useState } from 'react';
 import MainMenu from '../components/MainMenu';
+import { signOut } from '../utils/auth';
 import ServerInfo from '../utils/ServerInfo';
 
 import styles from './Upload.module.css';
@@ -33,8 +34,11 @@ const Upload: React.FC = () => {
           </IonButtons>
           <IonTitle>EPA Upload</IonTitle>
           <IonButtons slot="end">
-            <IonButton title="User">
-              <IonIcon slot="icon-only" icon={person}></IonIcon>
+            <IonButton
+              title="Sign Out"
+              onClick={() => signOut()}
+            >
+              <IonIcon slot="icon-only" icon={person} ></IonIcon>
             </IonButton>
           </IonButtons>
         </IonToolbar>
