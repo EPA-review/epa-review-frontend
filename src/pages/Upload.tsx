@@ -4,7 +4,6 @@ import { apps, person } from "ionicons/icons";
 import { useState } from 'react';
 import MainMenu from '../components/MainMenu';
 import UserMenu from '../components/UserMenu';
-import { signOut } from '../utils/auth';
 import ServerInfo from '../utils/ServerInfo';
 
 import styles from './Upload.module.css';

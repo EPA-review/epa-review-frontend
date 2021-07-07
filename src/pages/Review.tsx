@@ -4,7 +4,6 @@ import { useEffect, useState } from 'react';
 import { useHistory } from 'react-router';
 import MainMenu from '../components/MainMenu';
 import UserMenu from '../components/UserMenu';
-import { signOut } from '../utils/auth';
 import ServerInfo from '../utils/ServerInfo';
 
 const Review: React.FC = () => {

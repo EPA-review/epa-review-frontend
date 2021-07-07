@@ -2,14 +2,12 @@ import { AlertOptions } from '@ionic/core';
 import { AlertButton, IonButton, IonCard, IonCardContent, IonCardHeader, IonContent, IonImg, IonInput, IonItem, IonLabel, IonPage, useIonAlert } from '@ionic/react';
 import { HookOverlayOptions } from '@ionic/react/dist/types/hooks/HookOverlayOptions';
 import { useState } from 'react';
-import { useHistory } from 'react-router';
 import { signIn as authSignIn } from '../utils/auth';
 import { User } from '../utils/User';
 
 import styles from './Home.module.css';
 
 const Home: React.FC = () => {
-  const history = useHistory();
   const [userInfo, setUserInfo] = useState<User>({});
   const [presentAlert] = useIonAlert();
 
