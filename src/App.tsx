@@ -25,32 +25,42 @@ import Review from './pages/Review';
 import Upload from './pages/Upload';
 import Dashboard from './pages/Dashboard';
 import ReviewDetail from './pages/ReviewDetail';
+import { useEffect } from 'react';
+import { applyTheme, getActualTheme } from './utils/theme';
 
-const App: React.FC = () => (
-  <IonApp>
-    <IonReactRouter>
-      <IonRouterOutlet>
-        <Route exact path="/">
-          <Redirect to="/home" />
-        </Route>
-        <Route exact path="/home">
-          <Home />
-        </Route>
-        <Route exact path="/upload">
-          <Upload />
-        </Route>
-        <Route exact path="/review">
-          <Review />
-        </Route>
-        <Route exact path="/review/:groupTag">
-          <ReviewDetail />
-        </Route>
-        <Route exact path="/dashboard">
-          <Dashboard />
-        </Route>
-      </IonRouterOutlet>
-    </IonReactRouter>
-  </IonApp>
-);
+const App: React.FC = () => {
+  const theme = getActualTheme();
+
+  useEffect(() => {
+    applyTheme(theme);
+  }, [theme]);
+
+  return (
+    <IonApp>
+      <IonReactRouter>
+        <IonRouterOutlet>
+          <Route exact path="/">
+            <Redirect to="/home" />
+          </Route>
+          <Route exact path="/home">
+            <Home />
+          </Route>
+          <Route exact path="/upload">
+            <Upload />
+          </Route>
+          <Route exact path="/review">
+            <Review />
+          </Route>
+          <Route exact path="/review/:groupTag">
+            <ReviewDetail />
+          </Route>
+          <Route exact path="/dashboard">
+            <Dashboard />
+          </Route>
+        </IonRouterOutlet>
+      </IonReactRouter>
+    </IonApp>
+  );
+};
 
 export default App;
