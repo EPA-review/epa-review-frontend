@@ -25,39 +25,51 @@ import Review from './pages/Review';
 import Upload from './pages/Upload';
 import Dashboard from './pages/Dashboard';
 import ReviewDetail from './pages/ReviewDetail';
-import { useEffect } from 'react';
+import { useEffect, useState } from 'react';
 import { applyTheme, getActualTheme } from './utils/theme';
+import { determineIfSignedIn } from './utils/auth';
 
 const App: React.FC = () => {
   const theme = getActualTheme();
+  const [routerOutlet, setRouterOutlet] = useState<any>();
 
   useEffect(() => {
     applyTheme(theme);
   }, [theme]);
 
-  return (
-    <IonApp>
-      <IonReactRouter>
+  useEffect(() => {
+    async function generateRouterOutlet() {
+      const hasSignedIn = await determineIfSignedIn();
+      setRouterOutlet((
         <IonRouterOutlet>
           <Route exact path="/">
             <Redirect to="/home" />
           </Route>
           <Route exact path="/home">
-            <Home />
+            {hasSignedIn ? <Redirect to="/upload" /> : <Home />}
           </Route>
           <Route exact path="/upload">
-            <Upload />
+            {hasSignedIn ? <Upload /> : <Redirect to="/home" />}
           </Route>
           <Route exact path="/review">
-            <Review />
+            {hasSignedIn ? <Review /> : <Redirect to="/home" />}
           </Route>
           <Route exact path="/review/:groupTag">
-            <ReviewDetail />
+            {hasSignedIn ? <ReviewDetail /> : <Redirect to="/home" />}
           </Route>
           <Route exact path="/dashboard">
-            <Dashboard />
+            {hasSignedIn ? <Dashboard /> : <Redirect to="/home" />}
           </Route>
         </IonRouterOutlet>
+      ));
+    }
+    generateRouterOutlet();
+  }, []);
+
+  return (
+    <IonApp>
+      <IonReactRouter>
+        {routerOutlet}
       </IonReactRouter>
     </IonApp>
   );

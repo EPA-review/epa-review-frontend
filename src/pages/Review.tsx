@@ -22,8 +22,6 @@ const Review: React.FC = () => {
       let user: User;
       if (response.ok && (user = await response.json())) {
         setUserInfo(user);
-      } else {
-        history.push('/home');
       }
     }
     obtainUser();
@@ -89,5 +87,5 @@ async function signOut(
       credentials: 'include'
     }
   );
-  history.push('/home');
+  window.location.reload();
 }

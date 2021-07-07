@@ -19,19 +19,6 @@ const Home: React.FC = () => {
     { name: 'password', label: 'Password', type: 'password', require: true },
   ];
 
-  useEffect(() => {
-    async function redirectIfAlreadySignedIn() {
-      const response = await fetch(
-        `${ServerInfo.SERVER_BASE_URL}/user/me`,
-        { credentials: 'include' }
-      );
-      if (response.ok && (await response.json())._id) {
-        history.push('/review');
-      }
-    }
-    redirectIfAlreadySignedIn();
-  }, [history]);
-
   return (
     <IonPage>
       <IonContent>
@@ -97,7 +84,7 @@ async function signIn(
     }
   );
   if (response.ok) {
-    history.push('/review');
+    window.location.reload();
   } else {
     presentAlert('Fail to sign in.', [{ text: 'OK' }]);
     setUserInfo({});
