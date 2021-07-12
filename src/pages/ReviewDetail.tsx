@@ -1,4 +1,4 @@
-import { IonBackButton, IonButton, IonButtons, IonCard, IonCardContent, IonCol, IonContent, IonGrid, IonHeader, IonIcon, IonPage, IonRow, IonTitle, IonToolbar } from '@ionic/react';
+import { IonBackButton, IonButton, IonButtons, IonCard, IonCardContent, IonCol, IonContent, IonGrid, IonHeader, IonIcon, IonPage, IonRow, IonTitle, IonToolbar, useIonPopover } from '@ionic/react';
 import { person } from "ionicons/icons";
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
@@ -6,7 +6,7 @@ import ServerInfo from '../utils/ServerInfo';
 
 import styles from './ReviewDetail.module.css';
 
-type EpaFeedback = { originalText: string, anonmymizedText: string };
+type EpaFeedback = { originalText: string, tags: { start: number, end: number, name: string }[] };
 
 const Dashboard: React.FC = () => {
   const { groupTag } = useParams<{ groupTag: string }>();
@@ -46,16 +46,21 @@ const Dashboard: React.FC = () => {
         <IonGrid>
           {
             data ?
-              data.map(({ originalText, anonmymizedText }, i) => (
+              data.map(({ originalText, tags }, i) => (
                 <IonRow key={i}>
                   <IonCol>
                     <IonCard className={styles.card}>
-                      <IonCardContent>{originalText}</IonCardContent>
-                    </IonCard>
-                  </IonCol>
-                  <IonCol>
-                    <IonCard className={styles.card}>
-                      <IonCardContent>{anonmymizedText}</IonCardContent>
+                      <IonCardContent>
+                        <s-magic-text ref={el => {
+                          if (el) {
+                            el.text = originalText;
+                            el.highlights = tags.map(tag => ({ ...tag, tag: tag.name, style: { color: 'lightblue' } }));
+                            el.addEventListener('segmentClick', ({ detail }: any) => {
+                              alert('a dialog with actions should be presented.');
+                            });
+                          }
+                        }}></s-magic-text>
+                      </IonCardContent>
                     </IonCard>
                   </IonCol>
                 </IonRow>
@@ -64,7 +69,7 @@ const Dashboard: React.FC = () => {
           }
         </IonGrid>
       </IonContent>
-    </IonPage>
+    </IonPage >
   );
 };
 

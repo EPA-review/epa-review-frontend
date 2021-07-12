@@ -4,6 +4,8 @@ import App from './App';
 import * as serviceWorkerRegistration from './serviceWorkerRegistration';
 import reportWebVitals from './reportWebVitals';
 
+import './register-s-magic-text';
+
 ReactDOM.render(
   <React.StrictMode>
     <App />
