@@ -117,6 +117,14 @@ const Upload: React.FC = () => {
                 setIsDataLookingGood(true);
               }}
             >Looks Good</IonButton>
+            <IonButton
+              fill="outline"
+              disabled={!!(file && data && isDataLookingGood)}
+              onClick={async () => {
+                setFile(undefined);
+                setData(undefined);
+              }}
+            >Go Back</IonButton>
           </IonCardContent>
         </IonCard>
         <IonCard className={styles.card} disabled={!(file && data && isDataLookingGood)}>
