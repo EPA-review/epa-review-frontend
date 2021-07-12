@@ -9,16 +9,17 @@ const UserMenu: React.FC = () => {
   const [user, setUser] = useState<User>();
 
   useEffect(() => {
-    async function fetchAndSetUser() {
+    async function fetchAndSetUserInfo() {
       setUser(await fetchUser());
     }
-    fetchAndSetUser();
+    fetchAndSetUserInfo();
   }, []);
 
   return (
     <IonContent className={styles['main-container']}>
       <IonText>
         <h1>{user?.username}</h1>
+        <h6>{user?.roleName}</h6>
       </IonText>
       <IonButton
         expand="block"

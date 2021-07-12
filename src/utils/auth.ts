@@ -2,11 +2,20 @@ import ServerInfo from "./ServerInfo";
 import { User } from "./User";
 
 export async function fetchUser() {
-  const response = await fetch(
+  let response = await fetch(
     `${ServerInfo.SERVER_BASE_URL}/user/me`,
     { credentials: 'include' }
   );
-  return response.ok ? (await response.json()) : undefined;
+  let user: User | undefined;
+  if (response.ok) {
+    user = await response.json() as User;
+    response = await fetch(
+      `${ServerInfo.SERVER_BASE_URL}/role/me`,
+      { credentials: 'include' }
+    );
+    user.roleName = (await response.json())['name'];
+  }
+  return user;
 }
 
 export async function signIn(userInfo: User) {
