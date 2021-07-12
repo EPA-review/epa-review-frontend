@@ -2,6 +2,7 @@ import { IonBackButton, IonButton, IonButtons, IonCard, IonCardContent, IonCol, 
 import { person, checkmark, create, swapHorizontal } from "ionicons/icons";
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
+import UserMenu from '../components/UserMenu';
 import ServerInfo from '../utils/ServerInfo';
 
 import styles from './ReviewDetail.module.css';
@@ -10,8 +11,8 @@ type EpaFeedback = { originalText: string, tags: { start: number, end: number, n
 
 const Dashboard: React.FC = () => {
   const { groupTag } = useParams<{ groupTag: string }>();
-
   const [data, setData] = useState<EpaFeedback[]>();
+  const [presentUserMenuPopover, dismissUserMenuPopover] = useIonPopover(UserMenu, { onHide: () => dismissUserMenuPopover() });
 
   useEffect(() => {
     async function obtainUser() {
@@ -36,8 +37,11 @@ const Dashboard: React.FC = () => {
           </IonButtons>
           <IonTitle>{groupTag}</IonTitle>
           <IonButtons slot="end">
-            <IonButton title="User">
-              <IonIcon slot="icon-only" icon={person}></IonIcon>
+            <IonButton
+              title="User"
+              onClick={event => presentUserMenuPopover({ event: event.nativeEvent })}
+            >
+              <IonIcon slot="icon-only" icon={person} ></IonIcon>
             </IonButton>
           </IonButtons>
         </IonToolbar>
