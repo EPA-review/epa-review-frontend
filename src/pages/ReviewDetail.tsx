@@ -58,7 +58,7 @@ const Dashboard: React.FC = () => {
                         <s-magic-text ref={el => {
                           if (el) {
                             el.text = originalText;
-                            el.highlights = tags.map(tag => ({ ...tag, tag: tag.name, style: { color: 'lightblue' } }));
+                            el.highlights = tags?.map(tag => ({ ...tag, tag: tag.name, style: { color: 'lightblue' } }));
                             el.addEventListener('segmentClick', ({ detail }: any) => {
                               alert('a dialog with actions should be presented.');
                             });
