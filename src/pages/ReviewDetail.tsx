@@ -1,5 +1,5 @@
 import { IonBackButton, IonButton, IonButtons, IonCard, IonCardContent, IonCol, IonContent, IonGrid, IonHeader, IonIcon, IonPage, IonRow, IonTitle, IonToolbar, useIonPopover } from '@ionic/react';
-import { person } from "ionicons/icons";
+import { person, checkmark, create, swapHorizontal } from "ionicons/icons";
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import ServerInfo from '../utils/ServerInfo';
@@ -61,6 +61,19 @@ const Dashboard: React.FC = () => {
                           }
                         }}></s-magic-text>
                       </IonCardContent>
+                    </IonCard>
+                  </IonCol>
+                  <IonCol size="auto">
+                    <IonCard className={styles.card} style={{ width: '192px' }}>
+                      <IonButton color="success" fill="outline" title="Approve">
+                        <IonIcon slot="icon-only" icon={checkmark}></IonIcon>
+                      </IonButton>
+                      <IonButton color="warning" fill="outline" title="Modify">
+                        <IonIcon slot="icon-only" icon={create}></IonIcon>
+                      </IonButton>
+                      <IonButton color="primary" fill="outline" title="Swap">
+                        <IonIcon slot="icon-only" icon={swapHorizontal}></IonIcon>
+                      </IonButton>
                     </IonCard>
                   </IonCol>
                 </IonRow>
