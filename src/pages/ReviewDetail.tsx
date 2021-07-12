@@ -1,5 +1,5 @@
 import { IonBackButton, IonButton, IonButtons, IonCard, IonCardContent, IonCol, IonContent, IonGrid, IonHeader, IonIcon, IonPage, IonRow, IonTitle, IonToolbar, useIonPopover } from '@ionic/react';
-import { person, checkmark, create, swapHorizontal } from "ionicons/icons";
+import { person, checkmark, create, swapHorizontal, download } from "ionicons/icons";
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import UserMenu from '../components/UserMenu';
@@ -37,6 +37,12 @@ const Dashboard: React.FC = () => {
           </IonButtons>
           <IonTitle>{groupTag}</IonTitle>
           <IonButtons slot="end">
+            <IonButton
+              title="Export"
+              onClick={() => alert('Not implemented yet.')}
+            >
+              <IonIcon slot="icon-only" icon={download} ></IonIcon>
+            </IonButton>
             <IonButton
               title="User"
               onClick={event => presentUserMenuPopover({ event: event.nativeEvent })}
