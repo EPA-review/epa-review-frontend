@@ -74,9 +74,8 @@ const Dashboard: React.FC = () => {
                           <s-magic-text ref={el => {
                             if (el) {
                               el.text = originalText;
-                              el.highlights = tags?.map(tag => ({
+                              el.tags = tags?.map(tag => ({
                                 ...tag,
-                                tag: tag.name,
                                 style: { color: 'lightblue' }
                               }));
                               el.shouldReplaceTextWithTag = shouldReplaceTextsWithTags;
