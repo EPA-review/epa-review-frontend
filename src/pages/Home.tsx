@@ -22,7 +22,7 @@ const Home: React.FC = () => {
         <IonCard id={styles.card}>
           <IonCardContent>
             <IonCardHeader>
-              <IonImg src="/assets/icon/icon.png"></IonImg>
+              <IonImg src="./assets/icon/icon.png"></IonImg>
               <h1>EPA Review</h1>
             </IonCardHeader>
             <form onSubmit={event => {
