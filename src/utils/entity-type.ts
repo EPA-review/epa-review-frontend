@@ -1,6 +1,6 @@
 export enum EntityType {
-    PERSON = 'Person',
-    LOCATION = 'Location',
+    PERSON = 'PERSON',
+    LOCATION = 'LOCATION',
     NRP = 'NRP',
-    PRONOUN = 'Pronoun'
+    PRONOUN = 'PRONOUN'
 }
