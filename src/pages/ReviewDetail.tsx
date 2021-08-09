@@ -11,7 +11,7 @@ import styles from './ReviewDetail.module.css';
 
 type EpaFeedback = {
   originalText: string,
-  tags: { start: number, end: number, name: string }[],
+  tags: { start: number, end: number, name: string, score: number }[],
   shouldReplaceTextsWithTags: boolean,
   isEditing: boolean,
   hasApproved: boolean,
@@ -96,8 +96,12 @@ const Dashboard: React.FC = () => {
                                 el.tags = tags?.map(tag => {
                                   const color = EntityTypeColorDict[tag.name] || 'lightblue';
                                   return ({
-                                    ...tag,
-                                    style: { color }
+                                    start: tag.start,
+                                    end: tag.end,
+                                    name: tag.name,
+                                    label: tag.score.toString(),
+                                    style: { color },
+                                    labelStyle: { color: 'grey' }
                                   })
                                 });
                                 el.shouldReplaceTextWithTag = shouldReplaceTextsWithTags;
@@ -115,7 +119,8 @@ const Dashboard: React.FC = () => {
                                         tags.push({
                                           start: detail.start,
                                           end: detail.end,
-                                          name: tagName
+                                          name: tagName,
+                                          score: Number.NaN
                                         });
                                       }
                                     }
