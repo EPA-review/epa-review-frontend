@@ -1,4 +1,4 @@
-import { IonBackButton, IonButton, IonButtons, IonCard, IonCardContent, IonCol, IonContent, IonGrid, IonHeader, IonIcon, IonPage, IonRow, IonTitle, IonToolbar, useIonPopover } from '@ionic/react';
+import { IonBackButton, IonButton, IonButtons, IonCard, IonCardContent, IonCol, IonContent, IonFab, IonFabButton, IonGrid, IonHeader, IonIcon, IonInput, IonPage, IonRow, IonTitle, IonToolbar, useIonPopover } from '@ionic/react';
 import { person, checkmark, create, swapHorizontal, download } from "ionicons/icons";
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
@@ -18,12 +18,15 @@ type EpaFeedback = {
   clickHandler: (event: Event) => void;
 };
 
+const itemCountPerPage = 30;
+
 let selectPopoverValue = '';
 let entityChangeHandler: (tagName: string) => void = () => { };
 
 const Dashboard: React.FC = () => {
   const { groupTag } = useParams<{ groupTag: string }>();
   const [data, setData] = useState<EpaFeedback[]>();
+  const [page, setPage] = useState(1);
   const [, forceUpdate] = useState({});
   const [presentUserMenuPopover, dismissUserMenuPopover] = useIonPopover(UserMenu, { onHide: () => dismissUserMenuPopover() });
   const [presentSelectPopover, dismissSelectPopover] = useIonPopover(SelectMenu, {
@@ -78,103 +81,127 @@ const Dashboard: React.FC = () => {
         <IonGrid>
           {
             data ?
-              data.map((datum, i) => {
-                const { originalText, tags, shouldReplaceTextsWithTags, isEditing, hasApproved } = datum;
-                return (
-                  <IonRow key={i}>
-                    <IonCol>
-                      <IonCard className={styles.card}>
-                        <IonCardContent>
-                          <s-magic-text ref={el => {
-                            if (el) {
-                              el.text = originalText;
-                              el.tags = tags?.map(tag => ({
-                                ...tag,
-                                style: { color: 'lightblue' }
-                              }));
-                              el.shouldReplaceTextWithTag = shouldReplaceTextsWithTags;
-                              const clickHandler = (event: Event) => {
-                                const detail = (event as CustomEvent).detail;
-                                const tag = tags.find(tag => tag.start === detail.start && tag.end === detail.end);
-                                selectPopoverValue = tag?.name || '';
-                                entityChangeHandler = (tagName: string) => {
-                                  if (tagName === 'None') {
-                                    datum.tags = tags.filter(filteringTag => filteringTag !== tag);
-                                  } else {
-                                    if (tag) {
-                                      tag.name = tagName;
+              data
+                .slice(itemCountPerPage * (page - 1), itemCountPerPage * page)
+                .map((datum, i) => {
+                  const { originalText, tags, shouldReplaceTextsWithTags, isEditing, hasApproved } = datum;
+                  return (
+                    <IonRow key={i}>
+                      <IonCol>
+                        <IonCard className={styles.card}>
+                          <IonCardContent>
+                            <s-magic-text ref={el => {
+                              if (el) {
+                                el.text = originalText;
+                                el.tags = tags?.map(tag => ({
+                                  ...tag,
+                                  style: { color: 'lightblue' }
+                                }));
+                                el.shouldReplaceTextWithTag = shouldReplaceTextsWithTags;
+                                const clickHandler = (event: Event) => {
+                                  const detail = (event as CustomEvent).detail;
+                                  const tag = tags.find(tag => tag.start === detail.start && tag.end === detail.end);
+                                  selectPopoverValue = tag?.name || '';
+                                  entityChangeHandler = (tagName: string) => {
+                                    if (tagName === 'None') {
+                                      datum.tags = tags.filter(filteringTag => filteringTag !== tag);
                                     } else {
-                                      tags.push({
-                                        start: detail.start,
-                                        end: detail.end,
-                                        name: tagName
-                                      });
+                                      if (tag) {
+                                        tag.name = tagName;
+                                      } else {
+                                        tags.push({
+                                          start: detail.start,
+                                          end: detail.end,
+                                          name: tagName
+                                        });
+                                      }
                                     }
-                                  }
-                                  forceUpdate({});
+                                    forceUpdate({});
+                                  };
+                                  presentSelectPopover({ event: detail.innerEvent });
                                 };
-                                presentSelectPopover({ event: detail.innerEvent });
-                              };
-                              if (isEditing) {
-                                el.segmentHoverStyle = { background: 'orange' };
-                                el.removeEventListener('segmentClick', datum.clickHandler);
-                                el.addEventListener('segmentClick', clickHandler);
-                                datum.clickHandler = clickHandler;
-                              } else {
-                                el.segmentHoverStyle = {};
-                                el.removeEventListener('segmentClick', datum.clickHandler);
+                                if (isEditing) {
+                                  el.segmentHoverStyle = { background: 'orange' };
+                                  el.removeEventListener('segmentClick', datum.clickHandler);
+                                  el.addEventListener('segmentClick', clickHandler);
+                                  datum.clickHandler = clickHandler;
+                                } else {
+                                  el.segmentHoverStyle = {};
+                                  el.removeEventListener('segmentClick', datum.clickHandler);
+                                }
                               }
-                            }
-                          }}></s-magic-text>
-                        </IonCardContent>
-                      </IonCard>
-                    </IonCol>
-                    <IonCol size="auto">
-                      <IonCard className={styles.card} style={{ width: '192px' }}>
-                        <IonButton
-                          color="primary"
-                          fill={shouldReplaceTextsWithTags ? 'solid' : 'clear'}
-                          title="Swap"
-                          onClick={() => {
-                            datum.shouldReplaceTextsWithTags = !shouldReplaceTextsWithTags;
-                            forceUpdate({});
-                          }}
-                        >
-                          <IonIcon slot="icon-only" icon={swapHorizontal}></IonIcon>
-                        </IonButton>
-                        <IonButton
-                          disabled={hasApproved}
-                          color="warning"
-                          fill={isEditing ? 'solid' : 'clear'}
-                          title="Modify"
-                          onClick={() => {
-                            datum.isEditing = !isEditing;
-                            forceUpdate({});
-                          }}
-                        >
-                          <IonIcon slot="icon-only" icon={create}></IonIcon>
-                        </IonButton>
-                        <IonButton
-                          disabled={hasApproved}
-                          color="success"
-                          fill={hasApproved ? 'solid' : 'clear'}
-                          title="Approve"
-                          onClick={() => {
-                            datum.hasApproved = !hasApproved;
-                            datum.isEditing = false;
-                            forceUpdate({});
-                          }}
-                        >
-                          <IonIcon slot="icon-only" icon={checkmark}></IonIcon>
-                        </IonButton>
-                      </IonCard>
-                    </IonCol>
-                  </IonRow>
-                );
-              }) :
+                            }}></s-magic-text>
+                          </IonCardContent>
+                        </IonCard>
+                      </IonCol>
+                      <IonCol size="auto">
+                        <IonCard className={styles.card} style={{ width: '192px' }}>
+                          <IonButton
+                            color="primary"
+                            fill={shouldReplaceTextsWithTags ? 'solid' : 'clear'}
+                            title="Swap"
+                            onClick={() => {
+                              datum.shouldReplaceTextsWithTags = !shouldReplaceTextsWithTags;
+                              forceUpdate({});
+                            }}
+                          >
+                            <IonIcon slot="icon-only" icon={swapHorizontal}></IonIcon>
+                          </IonButton>
+                          <IonButton
+                            disabled={hasApproved}
+                            color="warning"
+                            fill={isEditing ? 'solid' : 'clear'}
+                            title="Modify"
+                            onClick={() => {
+                              datum.isEditing = !isEditing;
+                              forceUpdate({});
+                            }}
+                          >
+                            <IonIcon slot="icon-only" icon={create}></IonIcon>
+                          </IonButton>
+                          <IonButton
+                            disabled={hasApproved}
+                            color="success"
+                            fill={hasApproved ? 'solid' : 'clear'}
+                            title="Approve"
+                            onClick={() => {
+                              datum.hasApproved = !hasApproved;
+                              datum.isEditing = false;
+                              forceUpdate({});
+                            }}
+                          >
+                            <IonIcon slot="icon-only" icon={checkmark}></IonIcon>
+                          </IonButton>
+                        </IonCard>
+                      </IonCol>
+                    </IonRow>
+                  );
+                }) :
               'Loading data...'
           }
         </IonGrid>
+        <IonFab vertical="bottom" horizontal="center" slot="fixed" >
+          <IonFabButton
+            className={styles['page-switch-fab']}
+            disabled={page <= 1}
+            onClick={() => setPage(+page - 1)}
+          >{'<'}</IonFabButton>
+          <IonFabButton
+            className={styles['page-switch-fab']}
+            color="medium"
+          >
+            <IonInput
+              type="number"
+              value={page}
+              onIonBlur={({ detail }) => setPage(+(detail.target as any).value)}
+            />
+          </IonFabButton>
+          <IonFabButton
+            className={styles['page-switch-fab']}
+            disabled={page >= (data?.length || 0) / itemCountPerPage}
+            onClick={() => setPage(+page + 1)}
+          >{'>'}</IonFabButton>
+        </IonFab>
       </IonContent>
     </IonPage >
   );
