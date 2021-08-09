@@ -2,7 +2,9 @@ import { IonBackButton, IonButton, IonButtons, IonCard, IonCardContent, IonCol, 
 import { person, checkmark, create, swapHorizontal, download } from "ionicons/icons";
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
+import SelectMenu from '../components/SelectMenu';
 import UserMenu from '../components/UserMenu';
+import { EntityType } from '../utils/entity-type';
 import ServerInfo from '../utils/ServerInfo';
 
 import styles from './ReviewDetail.module.css';
@@ -16,11 +18,23 @@ type EpaFeedback = {
   clickHandler: (event: Event) => void;
 };
 
+let selectPopoverValue = '';
+let entityChangeHandler: (tagName: string) => void = () => { };
+
 const Dashboard: React.FC = () => {
   const { groupTag } = useParams<{ groupTag: string }>();
   const [data, setData] = useState<EpaFeedback[]>();
   const [, forceUpdate] = useState({});
   const [presentUserMenuPopover, dismissUserMenuPopover] = useIonPopover(UserMenu, { onHide: () => dismissUserMenuPopover() });
+  const [presentSelectPopover, dismissSelectPopover] = useIonPopover(SelectMenu, {
+    title: 'Select a entity',
+    options: ['None', ...Object.values(EntityType)],
+    getValue: () => selectPopoverValue,
+    valueChangeHandler: (tagName: string) => {
+      entityChangeHandler(tagName);
+      dismissSelectPopover();
+    }
+  });
 
   useEffect(() => {
     async function obtainUser() {
@@ -81,22 +95,25 @@ const Dashboard: React.FC = () => {
                               el.shouldReplaceTextWithTag = shouldReplaceTextsWithTags;
                               const clickHandler = (event: Event) => {
                                 const detail = (event as CustomEvent).detail;
-                                const tagName = prompt('Given a tag for this (put nothing to remove the tag):', '');
                                 const tag = tags.find(tag => tag.start === detail.start && tag.end === detail.end);
-                                if (tagName) {
-                                  if (tag) {
-                                    tag.name = tagName;
+                                selectPopoverValue = tag?.name || '';
+                                entityChangeHandler = (tagName: string) => {
+                                  if (tagName === 'None') {
+                                    datum.tags = tags.filter(filteringTag => filteringTag !== tag);
                                   } else {
-                                    tags.push({
-                                      start: detail.start,
-                                      end: detail.end,
-                                      name: tagName
-                                    });
+                                    if (tag) {
+                                      tag.name = tagName;
+                                    } else {
+                                      tags.push({
+                                        start: detail.start,
+                                        end: detail.end,
+                                        name: tagName
+                                      });
+                                    }
                                   }
-                                } else {
-                                  datum.tags = tags.filter(filteringTag => filteringTag !== tag);
-                                }
-                                forceUpdate({});
+                                  forceUpdate({});
+                                };
+                                presentSelectPopover({ event: detail.innerEvent });
                               };
                               if (isEditing) {
                                 el.segmentHoverStyle = { background: 'orange' };
