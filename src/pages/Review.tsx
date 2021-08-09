@@ -55,7 +55,7 @@ const Review: React.FC = () => {
             groupTags.map(groupTag => (
               <IonItem key={groupTag} button routerLink={`/review/${groupTag}`}>{groupTag}</IonItem>
             )) :
-            'No Data Yet'
+            'Loading data...'
         }
       </IonContent>
     </IonPage>

@@ -155,7 +155,7 @@ const Dashboard: React.FC = () => {
                   </IonRow>
                 );
               }) :
-              'No Data Yet'
+              'Loading data...'
           }
         </IonGrid>
       </IonContent>
