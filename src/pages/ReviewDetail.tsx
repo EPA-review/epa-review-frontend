@@ -4,7 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import SelectMenu from '../components/SelectMenu';
 import UserMenu from '../components/UserMenu';
-import { EntityType } from '../utils/entity-type';
+import { EntityType, EntityTypeColorDict } from '../utils/entity-type';
 import ServerInfo from '../utils/ServerInfo';
 
 import styles from './ReviewDetail.module.css';
@@ -93,10 +93,13 @@ const Dashboard: React.FC = () => {
                             <s-magic-text ref={el => {
                               if (el) {
                                 el.text = originalText;
-                                el.tags = tags?.map(tag => ({
-                                  ...tag,
-                                  style: { color: 'lightblue' }
-                                }));
+                                el.tags = tags?.map(tag => {
+                                  const color = EntityTypeColorDict[tag.name] || 'lightblue';
+                                  return ({
+                                    ...tag,
+                                    style: { color }
+                                  })
+                                });
                                 el.shouldReplaceTextWithTag = shouldReplaceTextsWithTags;
                                 const clickHandler = (event: Event) => {
                                   const detail = (event as CustomEvent).detail;
