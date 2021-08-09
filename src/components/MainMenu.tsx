@@ -3,7 +3,9 @@ import React from "react";
 
 import styles from './MainMenu.module.css';
 
-const MainMenu: React.FC = () => {
+const MainMenu: React.FC<{
+  onHide: () => void;
+}> = ({ onHide }) => {
   const items = [
     'Upload',
     'Review',
@@ -19,7 +21,7 @@ const MainMenu: React.FC = () => {
               <IonButton
                 className={styles['item-button']}
                 color="medium"
-                routerLink={convertNameToPath(item)}
+                href={convertNameToPath(item)} onClick={onHide}
               >{item}</IonButton>
             </IonCol>
           ))
@@ -32,5 +34,5 @@ const MainMenu: React.FC = () => {
 export default MainMenu;
 
 function convertNameToPath(name: string) {
-  return name.replace(' ', '-').toLowerCase();
+  return './#/'+(name.replace(' ', '-').toLowerCase());
 }
