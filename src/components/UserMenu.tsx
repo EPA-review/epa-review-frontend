@@ -1,4 +1,4 @@
-import { IonButton, IonContent, IonText } from "@ionic/react";
+import { IonBadge, IonButton, IonContent, IonText } from "@ionic/react";
 import React, { useEffect, useState } from "react";
 import { fetchUser, signOut } from "../utils/auth";
 import { User } from "../utils/User";
@@ -18,8 +18,11 @@ const UserMenu: React.FC = () => {
   return (
     <IonContent className={styles['main-container']}>
       <IonText>
-        <h1>{user?.username}</h1>
-        <h6>{user?.roleName}</h6>
+        <h1>
+          {user?.username}
+          &nbsp;
+          <IonBadge>{user?.roleName}</IonBadge>
+        </h1>
       </IonText>
       <IonButton
         expand="block"
