@@ -188,7 +188,12 @@ const Dashboard: React.FC = () => {
               'Loading data...'
           }
         </IonGrid>
-        <IonFab vertical="bottom" horizontal="center" slot="fixed" >
+        <IonFab
+          className={styles['page-switch-fab-container']}
+          vertical="bottom"
+          horizontal="center"
+          slot="fixed"
+        >
           <IonFabButton
             className={styles['page-switch-fab']}
             disabled={page <= 1}
