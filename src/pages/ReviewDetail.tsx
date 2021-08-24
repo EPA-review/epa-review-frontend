@@ -94,14 +94,13 @@ const Dashboard: React.FC = () => {
                               if (el) {
                                 el.text = originalText;
                                 el.tags = tags?.map(tag => {
-                                  const color = EntityTypeColorDict[tag.name] || 'lightblue';
                                   return ({
                                     start: tag.start,
                                     end: tag.end,
-                                    name: tag.name,
-                                    label: tag.score.toString(),
-                                    style: { color },
-                                    labelStyle: { color: 'grey' }
+                                    name: tag.score.toString(),
+                                    label: tag.name,
+                                    style: { color: 'var(--color)', background: 'lightblue', borderRadius: '5px', padding: '.25em' },
+                                    labelStyle: { background: '', color: 'var(--color)', marginLeft: '.5em', fontWeight: 'bold' }
                                   })
                                 });
                                 el.shouldReplaceTextWithTag = shouldReplaceTextsWithTags;
@@ -145,6 +144,7 @@ const Dashboard: React.FC = () => {
                       <IonCol size="auto">
                         <IonCard className={styles.card} style={{ width: '192px' }}>
                           <IonButton
+                            disabled
                             color="primary"
                             fill={shouldReplaceTextsWithTags ? 'solid' : 'clear'}
                             title="Swap"
