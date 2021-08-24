@@ -1,4 +1,8 @@
 .item-button {
-    height: 80px;
-    width: 80px;
+    height: 105px;
+    width: 105px;
+}
+
+.item-button span {
+    white-space: normal;
 }

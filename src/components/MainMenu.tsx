@@ -1,16 +1,31 @@
 import { IonGrid, IonRow, IonCol, IonButton } from "@ionic/react";
-import React from "react";
+import React, { useEffect, useState } from "react";
+import { fetchUser } from "../utils/auth";
+import { User } from "../utils/User";
 
 import styles from './MainMenu.module.css';
 
 const MainMenu: React.FC<{
   onHide: () => void;
 }> = ({ onHide }) => {
+  const [user, setUser] = useState<User>();
+
+  useEffect(() => {
+    async function fetchAndSetUserInfo() {
+      setUser(await fetchUser());
+    }
+    fetchAndSetUserInfo();
+  }, []);
+
   const items = [
     'Upload',
     'Review',
     // 'Dashboard'
   ];
+
+  if(user?.roleName === 'admin') {
+    items.push('User Management');
+  }
 
   return (
     <IonGrid>
@@ -22,7 +37,7 @@ const MainMenu: React.FC<{
                 className={styles['item-button']}
                 color="medium"
                 href={convertNameToPath(item)} onClick={onHide}
-              >{item}</IonButton>
+              ><span>{item}</span></IonButton>
             </IonCol>
           ))
         }

@@ -25,6 +25,7 @@ import Review from './pages/Review';
 import Upload from './pages/Upload';
 import Dashboard from './pages/Dashboard';
 import ReviewDetail from './pages/ReviewDetail';
+import UserManagement from './pages/UserManagement';
 import { useEffect, useState } from 'react';
 import { applyTheme, getActualTheme } from './utils/theme';
 import { fetchUser } from './utils/auth';
@@ -39,26 +40,32 @@ const App: React.FC = () => {
 
   useEffect(() => {
     async function generateRouterOutlet() {
-      const hasSignedIn = await fetchUser();
+      const signedInUser = await fetchUser();
       setRouterOutlet((
         <IonRouterOutlet>
           <Route exact path="/">
             <Redirect to="/home" />
           </Route>
           <Route exact path="/home">
-            {hasSignedIn ? <Redirect to="/upload" /> : <Home />}
+            {signedInUser ? <Redirect to="/upload" /> : <Home />}
           </Route>
           <Route exact path="/upload">
-            {hasSignedIn ? <Upload /> : <Redirect to="/home" />}
+            {signedInUser ? <Upload /> : <Redirect to="/home" />}
           </Route>
           <Route exact path="/review">
-            {hasSignedIn ? <Review /> : <Redirect to="/home" />}
+            {signedInUser ? <Review /> : <Redirect to="/home" />}
           </Route>
           <Route exact path="/review/:groupTag">
-            {hasSignedIn ? <ReviewDetail /> : <Redirect to="/home" />}
+            {signedInUser ? <ReviewDetail /> : <Redirect to="/home" />}
           </Route>
           <Route exact path="/dashboard">
-            {hasSignedIn ? <Dashboard /> : <Redirect to="/home" />}
+            {signedInUser ? <Dashboard /> : <Redirect to="/home" />}
+          </Route>
+          <Route exact path="/dashboard">
+            {signedInUser ? <Dashboard /> : <Redirect to="/home" />}
+          </Route>
+          <Route exact path="/user-management">
+            {signedInUser?.roleName === 'admin' ? <UserManagement /> : <Redirect to="/home" />}
           </Route>
         </IonRouterOutlet>
       ));
