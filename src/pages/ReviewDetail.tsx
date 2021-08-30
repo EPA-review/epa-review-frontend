@@ -27,6 +27,8 @@ let selectPopoverValue = '';
 let entityChangeHandler: (tagName: string) => void = () => { };
 
 const Dashboard: React.FC = () => {
+  const userId = sessionStorage.getItem('userId') || '';
+
   const { groupTag } = useParams<{ groupTag: string }>();
   const [data, setData] = useState<EpaFeedback[]>();
   const [page, setPage] = useState(1);
@@ -44,14 +46,7 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     async function obtainData() {
-      const response = await fetch(
-        `${ServerInfo.SERVER_BASE_URL}/epa/fetch?groupTag=${groupTag}`,
-        { credentials: 'include' }
-      );
-      let data: EpaFeedback[];
-      if (response.ok && (data = await response.json())) {
-        setData(data);
-      }
+      setData(await fetchData(groupTag));
     }
     obtainData();
   }, []);
@@ -67,7 +62,25 @@ const Dashboard: React.FC = () => {
           <IonButtons slot="end">
             <IonButton
               title="Export"
-              onClick={() => alert('Not implemented yet.')}
+              onClick={async () => {
+                const currentData = await fetchData(groupTag);
+                const exportContent = currentData?.map(datum => ({
+                  originalText: datum.originalText,
+                  tags: datum.userTags?.[userId] || datum.tags
+                }));
+                const json = JSON.stringify(exportContent);
+
+                var element = document.createElement('a');
+                element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(json));
+                element.setAttribute('download', `${new Date().toISOString()}.json`);
+
+                element.style.display = 'none';
+                document.body.appendChild(element);
+
+                element.click();
+
+                document.body.removeChild(element);
+              }}
             >
               <IonIcon slot="icon-only" icon={download} ></IonIcon>
             </IonButton>
@@ -94,7 +107,6 @@ const Dashboard: React.FC = () => {
                         <IonCard className={styles.card}>
                           <IonCardContent>
                             <s-magic-text ref={async el => {
-                              const userId = sessionStorage.getItem('userId') || '';
                               if (el) {
                                 el.text = originalText;
                                 el.tags = (isShowingModifiedTags ? (userTags?.[userId] || tags) : tags)?.map(tag => {
@@ -181,7 +193,6 @@ const Dashboard: React.FC = () => {
                               datum.hasApproved = !hasApproved;
                               datum.isEditing = false;
                               if (datum.hasApproved) {
-                                const userId = sessionStorage.getItem('userId') || '';
                                 const tagsToUpload = datum.userTags[userId].map(tag => ({
                                   start: tag.start,
                                   end: tag.end,
@@ -248,5 +259,16 @@ const Dashboard: React.FC = () => {
     </IonPage >
   );
 };
+
+async function fetchData(groupTag: string) {
+  const response = await fetch(
+    `${ServerInfo.SERVER_BASE_URL}/epa/fetch?groupTag=${groupTag}`,
+    { credentials: 'include' }
+  );
+  let data: EpaFeedback[];
+  if (response.ok && (data = await response.json())) {
+    return data;
+  }
+}
 
 export default Dashboard;
