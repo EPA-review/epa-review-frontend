@@ -4,15 +4,18 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import SelectMenu from '../components/SelectMenu';
 import UserMenu from '../components/UserMenu';
+import { fetchUser } from '../utils/auth';
 import { EntityType, EntityTypeColorDict } from '../utils/entity-type';
 import ServerInfo from '../utils/ServerInfo';
 
 import styles from './ReviewDetail.module.css';
 
 type EpaFeedback = {
+  _id: string;
   originalText: string,
   tags: { start: number, end: number, name: string, score: number }[],
-  shouldReplaceTextsWithTags: boolean,
+  userTags: { [user: string]: { start: number, end: number, name: string, score: number }[] },
+  isShowingModifiedTags: boolean,
   isEditing: boolean,
   hasApproved: boolean,
   clickHandler: (event: Event) => void;
@@ -40,7 +43,7 @@ const Dashboard: React.FC = () => {
   });
 
   useEffect(() => {
-    async function obtainUser() {
+    async function obtainData() {
       const response = await fetch(
         `${ServerInfo.SERVER_BASE_URL}/epa/fetch?groupTag=${groupTag}`,
         { credentials: 'include' }
@@ -50,7 +53,7 @@ const Dashboard: React.FC = () => {
         setData(data);
       }
     }
-    obtainUser();
+    obtainData();
   }, []);
 
   return (
@@ -84,29 +87,31 @@ const Dashboard: React.FC = () => {
               data
                 .slice(itemCountPerPage * (page - 1), itemCountPerPage * page)
                 .map((datum, i) => {
-                  const { originalText, tags, shouldReplaceTextsWithTags, isEditing, hasApproved } = datum;
+                  const { originalText, tags, userTags, isShowingModifiedTags = true, isEditing, hasApproved } = datum;
                   return (
                     <IonRow key={i}>
                       <IonCol>
                         <IonCard className={styles.card}>
                           <IonCardContent>
-                            <s-magic-text ref={el => {
+                            <s-magic-text ref={async el => {
+                              const userId = sessionStorage.getItem('userId') || '';
                               if (el) {
                                 el.text = originalText;
-                                el.tags = tags?.map(tag => {
+                                el.tags = (isShowingModifiedTags ? (userTags?.[userId] || tags) : tags)?.map(tag => {
                                   return ({
                                     start: tag.start,
                                     end: tag.end,
-                                    name: tag.score.toString(),
+                                    name: tag.score?.toString(),
                                     label: tag.name,
                                     style: { color: 'var(--color)', background: 'lightblue', borderRadius: '5px', padding: '.25em' },
                                     labelStyle: { background: '', color: 'var(--color)', marginLeft: '.5em', fontWeight: 'bold' }
                                   })
                                 });
-                                el.shouldReplaceTextWithTag = shouldReplaceTextsWithTags;
                                 const clickHandler = (event: Event) => {
                                   const detail = (event as CustomEvent).detail;
-                                  const tag = tags.find(tag => tag.start === detail.start && tag.end === detail.end);
+                                  datum.userTags[userId] = tags.map(tag => ({ ...tag }));
+                                  const currentuserTags = datum.userTags[userId];
+                                  const tag = currentuserTags.find(tag => tag.start === detail.start && tag.end === detail.end);
                                   selectPopoverValue = tag?.name || '';
                                   entityChangeHandler = (tagName: string) => {
                                     if (tagName === 'None') {
@@ -114,12 +119,13 @@ const Dashboard: React.FC = () => {
                                     } else {
                                       if (tag) {
                                         tag.name = tagName;
+                                        tag.score = 1;
                                       } else {
-                                        tags.push({
+                                        currentuserTags.push({
                                           start: detail.start,
                                           end: detail.end,
                                           name: tagName,
-                                          score: Number.NaN
+                                          score: 1
                                         });
                                       }
                                     }
@@ -144,19 +150,19 @@ const Dashboard: React.FC = () => {
                       <IonCol size="auto">
                         <IonCard className={styles.card} style={{ width: '192px' }}>
                           <IonButton
-                            disabled
                             color="primary"
-                            fill={shouldReplaceTextsWithTags ? 'solid' : 'clear'}
+                            fill={isShowingModifiedTags ? 'solid' : 'clear'}
                             title="Swap"
                             onClick={() => {
-                              datum.shouldReplaceTextsWithTags = !shouldReplaceTextsWithTags;
+                              datum.isShowingModifiedTags = !isShowingModifiedTags;
+                              datum.isEditing = false;
                               forceUpdate({});
                             }}
                           >
                             <IonIcon slot="icon-only" icon={swapHorizontal}></IonIcon>
                           </IonButton>
                           <IonButton
-                            disabled={hasApproved}
+                            disabled={hasApproved || !isShowingModifiedTags}
                             color="warning"
                             fill={isEditing ? 'solid' : 'clear'}
                             title="Modify"
@@ -168,14 +174,37 @@ const Dashboard: React.FC = () => {
                             <IonIcon slot="icon-only" icon={create}></IonIcon>
                           </IonButton>
                           <IonButton
-                            disabled={hasApproved}
                             color="success"
                             fill={hasApproved ? 'solid' : 'clear'}
                             title="Approve"
-                            onClick={() => {
+                            onClick={async () => {
                               datum.hasApproved = !hasApproved;
                               datum.isEditing = false;
-                              forceUpdate({});
+                              if (datum.hasApproved) {
+                                const userId = sessionStorage.getItem('userId') || '';
+                                const tagsToUpload = datum.userTags[userId].map(tag => ({
+                                  start: tag.start,
+                                  end: tag.end,
+                                  name: tag.name,
+                                  score: tag.score,
+                                }));
+                                const response = await fetch(
+                                  `${ServerInfo.SERVER_BASE_URL}/epa/user-tags?_id=${datum._id}`,
+                                  {
+                                    method: 'PUT',
+                                    credentials: 'include',
+                                    headers: {
+                                      'Content-type': 'application/json'
+                                    },
+                                    body: JSON.stringify(tagsToUpload)
+                                  }
+                                );
+                                if (response.ok) {
+                                  forceUpdate({});
+                                }
+                              } else {
+                                forceUpdate({});
+                              }
                             }}
                           >
                             <IonIcon slot="icon-only" icon={checkmark}></IonIcon>

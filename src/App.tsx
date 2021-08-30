@@ -41,6 +41,7 @@ const App: React.FC = () => {
   useEffect(() => {
     async function generateRouterOutlet() {
       const signedInUser = await fetchUser();
+      sessionStorage.setItem('userId', signedInUser?._id || '');
       setRouterOutlet((
         <IonRouterOutlet>
           <Route exact path="/">
