@@ -4,8 +4,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import SelectMenu from '../components/SelectMenu';
 import UserMenu from '../components/UserMenu';
-import { fetchUser } from '../utils/auth';
-import { EntityType, EntityTypeColorDict } from '../utils/entity-type';
+import { EntityType } from '../utils/entity-type';
 import ServerInfo from '../utils/ServerInfo';
 
 import styles from './ReviewDetail.module.css';
@@ -13,8 +12,8 @@ import styles from './ReviewDetail.module.css';
 type EpaFeedback = {
   _id: string;
   originalText: string,
-  tags: { start: number, end: number, name: string, score: number }[],
-  userTags: { [user: string]: { start: number, end: number, name: string, score: number }[] },
+  tags: { start: number, end: number, name: string, score: number, isUserSet?: boolean }[],
+  userTags: { [user: string]: { start: number, end: number, name: string, score: number, isUserSet: boolean }[] },
   isShowingModifiedTags: boolean,
   isEditing: boolean,
   hasApproved: boolean,
@@ -101,6 +100,9 @@ const Dashboard: React.FC = () => {
                 .slice(itemCountPerPage * (page - 1), itemCountPerPage * page)
                 .map((datum, i) => {
                   const { originalText, tags, userTags, isShowingModifiedTags = true, isEditing, hasApproved } = datum;
+                  if (!userTags) {
+                    datum.userTags = {};
+                  }
                   return (
                     <IonRow key={i}>
                       <IonCol>
@@ -115,35 +117,40 @@ const Dashboard: React.FC = () => {
                                     end: tag.end,
                                     name: tag.score?.toString(),
                                     label: tag.name,
-                                    style: { color: 'var(--color)', background: 'lightblue', borderRadius: '5px', padding: '.25em' },
+                                    style: { color: 'var(--color)', background: tag.isUserSet ? 'bisque' : 'lightblue', borderRadius: '5px', padding: '.25em' },
                                     labelStyle: { background: '', color: 'var(--color)', marginLeft: '.5em', fontWeight: 'bold' }
                                   })
                                 });
                                 const clickHandler = (event: Event) => {
                                   const detail = (event as CustomEvent).detail;
-                                  datum.userTags[userId] = tags.map(tag => ({ ...tag }));
+                                  if (!datum?.userTags[userId]) {
+                                    datum.userTags[userId] = tags.map(tag => ({ ...tag, isUserSet: false }));
+                                  }
                                   const currentuserTags = datum.userTags[userId];
                                   const tag = currentuserTags.find(tag => tag.start === detail.start && tag.end === detail.end);
                                   selectPopoverValue = tag?.name || '';
                                   entityChangeHandler = (tagName: string) => {
                                     if (tagName === 'None') {
-                                      datum.tags = tags.filter(filteringTag => filteringTag !== tag);
+                                      datum.userTags[userId] = datum.userTags[userId].filter(filteringTag => filteringTag !== tag);
                                     } else {
                                       if (tag) {
                                         tag.name = tagName;
                                         tag.score = 1;
+                                        tag.isUserSet = true;
                                       } else {
                                         currentuserTags.push({
                                           start: detail.start,
                                           end: detail.end,
                                           name: tagName,
-                                          score: 1
+                                          score: 1,
+                                          isUserSet: true
                                         });
                                       }
                                     }
+                                    dismissSelectPopover();
                                     forceUpdate({});
                                   };
-                                  presentSelectPopover({ event: detail.innerEvent });
+                                  presentSelectPopover();
                                 };
                                 if (isEditing) {
                                   el.segmentHoverStyle = { background: 'orange' };
@@ -198,6 +205,7 @@ const Dashboard: React.FC = () => {
                                   end: tag.end,
                                   name: tag.name,
                                   score: tag.score,
+                                  isUserSet: tag.isUserSet
                                 }));
                                 const response = await fetch(
                                   `${ServerInfo.SERVER_BASE_URL}/epa/user-tags?_id=${datum._id}`,
