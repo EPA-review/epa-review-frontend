@@ -67,7 +67,7 @@ const Review: React.FC = () => {
               <IonItem key={groupTag} button routerLink={`/review/${groupTag}`}>
                 {groupTag}
                 {
-                  user?.roleName === 'admin' &&
+                  (user?.roleName === 'super' || user?.roleName === 'admin') &&
                   <IonButton
                     color="danger"
                     slot="end"

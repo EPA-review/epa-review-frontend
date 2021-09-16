@@ -23,7 +23,7 @@ const MainMenu: React.FC<{
     // 'Dashboard'
   ];
 
-  if(user?.roleName === 'admin') {
+  if(user?.roleName === 'super' || user?.roleName === 'admin') {
     items.push('User Management');
   }
 

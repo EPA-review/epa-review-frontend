@@ -66,7 +66,7 @@ const App: React.FC = () => {
             {signedInUser ? <Dashboard /> : <Redirect to="/home" />}
           </Route>
           <Route exact path="/user-management">
-            {signedInUser?.roleName === 'admin' ? <UserManagement /> : <Redirect to="/home" />}
+            {(signedInUser?.roleName === 'super' || signedInUser?.roleName === 'admin') ? <UserManagement /> : <Redirect to="/home" />}
           </Route>
         </IonRouterOutlet>
       ));
