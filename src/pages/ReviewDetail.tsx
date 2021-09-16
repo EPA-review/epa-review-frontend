@@ -1,4 +1,5 @@
 import { IonBackButton, IonButton, IonButtons, IonCard, IonCardContent, IonCol, IonContent, IonFab, IonFabButton, IonGrid, IonHeader, IonIcon, IonInput, IonPage, IonRow, IonTitle, IonToolbar, useIonPopover } from '@ionic/react';
+import { csvFormat } from 'd3-dsv';
 import { person, checkmark, create, swapHorizontal, download } from "ionicons/icons";
 import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
@@ -60,18 +61,46 @@ const Dashboard: React.FC = () => {
           <IonTitle>{groupTag}</IonTitle>
           <IonButtons slot="end">
             <IonButton
-              title="Export"
+              title="Export JSON"
               onClick={async () => {
                 const currentData = await fetchData(groupTag);
                 const exportContent = currentData?.map(datum => ({
                   originalText: datum.originalText,
-                  tags: datum.userTags?.[userId] || datum.tags
+                  tags: datum.tags,
+                  userTags: datum.userTags
                 }));
                 const json = JSON.stringify(exportContent);
 
                 var element = document.createElement('a');
                 element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(json));
                 element.setAttribute('download', `${new Date().toISOString()}.json`);
+
+                element.style.display = 'none';
+                document.body.appendChild(element);
+
+                element.click();
+
+                document.body.removeChild(element);
+              }}
+            >
+              <IonIcon slot="icon-only" icon={download} ></IonIcon>
+            </IonButton>
+            <IonButton
+              title="Export CSV"
+              color="secondary"
+              onClick={async () => {
+                const currentData = await fetchData(groupTag);
+
+                const exportContent = currentData?.map(datum => ({
+                  originalText: datum.originalText,
+                  tags: datum.tags.map(tag => `${tag.start}\t${tag.end}\t${tag.name}`).join('\n'),
+                  ...Object.fromEntries(Object.entries(datum.userTags || {}).map(([key, value]) => ([key, value.map(tag => `${tag.start}\t${tag.end}\t${tag.name}`).join('\n')])))
+                }));
+                const csv = csvFormat(exportContent || []);
+
+                var element = document.createElement('a');
+                element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(csv));
+                element.setAttribute('download', `${new Date().toISOString()}.csv`);
 
                 element.style.display = 'none';
                 document.body.appendChild(element);
