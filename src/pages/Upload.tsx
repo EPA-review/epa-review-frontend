@@ -12,6 +12,8 @@ const Upload: React.FC = () => {
   const [file, setFile] = useState<File>();
   const [data, setData] = useState<DSVRowArray<string>>();
   const [feedbackFieldName, setFeedbackFieldName] = useState('Feedback');
+  const [residentNameFieldName, setResidentNameFieldName] = useState('Resident Name');
+  const [observerNameFieldName, setObserverNameFieldName] = useState('Observer Name');
   const [isDataLookingGood, setIsDataLookingGood] = useState(false);
   const [groupTag, setGroupTag] = useState<string>();
   const [isGroupTagLookingGood, setIsGroupTagLookingGood] = useState(false);
@@ -111,6 +113,22 @@ const Upload: React.FC = () => {
                 onIonChange={({ detail }) => setFeedbackFieldName(detail.value || '')}
               ></IonInput>
             </IonItem>
+            <IonItem>
+              <IonLabel position="stacked">Name of <b>Resident Name</b> field</IonLabel>
+              <IonInput
+                disabled={!!(file && data && isDataLookingGood)}
+                value={residentNameFieldName}
+                onIonChange={({ detail }) => setResidentNameFieldName(detail.value || '')}
+              ></IonInput>
+            </IonItem>
+            <IonItem>
+              <IonLabel position="stacked">Name of <b>Observer Name</b> field</IonLabel>
+              <IonInput
+                disabled={!!(file && data && isDataLookingGood)}
+                value={observerNameFieldName}
+                onIonChange={({ detail }) => setObserverNameFieldName(detail.value || '')}
+              ></IonInput>
+            </IonItem>
             <IonButton
               disabled={!!(file && data && isDataLookingGood)}
               onClick={async () => {
@@ -181,7 +199,11 @@ const Upload: React.FC = () => {
                     headers: {
                       'Content-type': 'application/json'
                     },
-                    body: JSON.stringify(data?.map(datum => datum[feedbackFieldName]))
+                    body: JSON.stringify(data?.map(datum => ({
+                      text: datum[feedbackFieldName],
+                      residentName: datum[residentNameFieldName],
+                      observerName: datum[observerNameFieldName]
+                    })))
                   }
                 );
                 setShowLoading(false);
