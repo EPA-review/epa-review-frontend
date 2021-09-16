@@ -1,13 +1,6 @@
 export enum EntityType {
-  PERSON = 'PERSON',
-  LOCATION = 'LOCATION',
-  NRP = 'NRP',
+  NAME = 'NAME',
+  NICKNAME = 'NICKNAME',
+  ADJECTIVE = 'ADJECTIVE',
   PRONOUN = 'PRONOUN'
 }
-
-export const EntityTypeColorDict: { [entityName: string]: string } = {
-  PERSON: 'red',
-  LOCATION: 'yellow',
-  NRP: 'blue',
-  PRONOUN: 'green'
-};
