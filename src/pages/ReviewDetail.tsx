@@ -18,7 +18,6 @@ type EpaFeedback = {
   userTags: { [user: string]: { start: number, end: number, name: string, score: number, isUserSet: boolean }[] },
   isShowingModifiedTags: boolean,
   isEditing: boolean,
-  hasApproved: boolean,
   clickHandler: (event: Event) => void;
 };
 
@@ -129,7 +128,7 @@ const Dashboard: React.FC = () => {
               data
                 .slice(itemCountPerPage * (page - 1), itemCountPerPage * page)
                 .map((datum, i) => {
-                  const { originalText, tags, userTags, isShowingModifiedTags = true, isEditing, hasApproved } = datum;
+                  const { originalText, tags, userTags, isShowingModifiedTags = true, isEditing } = datum;
                   if (!userTags) {
                     datum.userTags = {};
                   }
@@ -211,7 +210,7 @@ const Dashboard: React.FC = () => {
                             <IonIcon slot="icon-only" icon={swapHorizontal}></IonIcon>
                           </IonButton>
                           <IonButton
-                            disabled={hasApproved || !isShowingModifiedTags}
+                            disabled={!isShowingModifiedTags}
                             color="warning"
                             fill={isEditing ? 'solid' : 'clear'}
                             title="Modify"
@@ -224,34 +223,29 @@ const Dashboard: React.FC = () => {
                           </IonButton>
                           <IonButton
                             color="success"
-                            fill={hasApproved ? 'solid' : 'clear'}
-                            title="Approve"
+                            fill={datum.userTags?.[userId] ? 'solid' : 'clear'}
+                            title="Submit"
                             onClick={async () => {
-                              datum.hasApproved = !hasApproved;
                               datum.isEditing = false;
-                              if (datum.hasApproved) {
-                                const tagsToUpload = datum.userTags[userId].map(tag => ({
-                                  start: tag.start,
-                                  end: tag.end,
-                                  name: tag.name,
-                                  score: tag.score,
-                                  isUserSet: tag.isUserSet
-                                }));
-                                const response = await fetch(
-                                  `${ServerInfo.SERVER_BASE_URL}/epa/user-tags?_id=${datum._id}`,
-                                  {
-                                    method: 'PUT',
-                                    credentials: 'include',
-                                    headers: {
-                                      'Content-type': 'application/json'
-                                    },
-                                    body: JSON.stringify(tagsToUpload)
-                                  }
-                                );
-                                if (response.ok) {
-                                  forceUpdate({});
+                              const tagsToUpload = datum.userTags[userId].map(tag => ({
+                                start: tag.start,
+                                end: tag.end,
+                                name: tag.name,
+                                score: tag.score,
+                                isUserSet: tag.isUserSet
+                              }));
+                              const response = await fetch(
+                                `${ServerInfo.SERVER_BASE_URL}/epa/user-tags?_id=${datum._id}`,
+                                {
+                                  method: 'PUT',
+                                  credentials: 'include',
+                                  headers: {
+                                    'Content-type': 'application/json'
+                                  },
+                                  body: JSON.stringify(tagsToUpload)
                                 }
-                              } else {
+                              );
+                              if (response.ok) {
                                 forceUpdate({});
                               }
                             }}
