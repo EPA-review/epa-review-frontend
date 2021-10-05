@@ -5,6 +5,7 @@ import { useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import SelectMenu from '../components/SelectMenu';
 import UserMenu from '../components/UserMenu';
+import { anonymizeText } from '../utils/anonymizeText';
 import { EntityType } from '../utils/entity-type';
 import ServerInfo from '../utils/ServerInfo';
 
@@ -93,8 +94,8 @@ const Dashboard: React.FC = () => {
 
                 const exportContent = currentData?.map(datum => ({
                   originalText: datum.originalText,
-                  tags: datum.tags.map(tag => `${tag.start}\t${tag.end}\t${tag.name}`).join('\n'),
-                  ...Object.fromEntries(Object.entries(datum.userTags || {}).map(([key, value]) => ([key, value.map(tag => `${tag.start}\t${tag.end}\t${tag.name}`).join('\n')])))
+                  auto: anonymizeText(datum.originalText, datum.tags),
+                  user: anonymizeText(datum.originalText, datum.userTags?.[userId])
                 }));
                 const csv = csvFormat(exportContent || []);
 
