@@ -62,7 +62,9 @@ const Dashboard: React.FC = () => {
 
   useEffect(() => {
     async function obtainData() {
-      setData(await fetchData(groupTag));
+      const data = await fetchData(groupTag);
+      data?.forEach(datum => datum.confusionMatrix = generateConfusionMatrix(datum.originalText, datum.tags, datum.userTags?.[userId]));
+      setData(data);
     }
     obtainData();
   }, []);
@@ -105,7 +107,7 @@ const Dashboard: React.FC = () => {
                   return (
                     <IonRow key={i}>
                       <IonCol>
-                        <IonCard className={styles.card} title={JSON.stringify(generateConfusionMatrix(originalText, tags, userTags?.[userId]))}>
+                        <IonCard className={styles.card} title={JSON.stringify(datum.confusionMatrix)}>
                           <IonCardContent>
                             <s-magic-text ref={async el => {
                               if (el) {
@@ -196,6 +198,7 @@ const Dashboard: React.FC = () => {
                             onClick={async () => {
                               datum.isEditing = false;
                               initializeUserTags(datum, userId, tags);
+                              datum.confusionMatrix = generateConfusionMatrix(originalText, tags, userTags?.[userId]);
                               const tagsToUpload = datum.userTags[userId].map(tag => ({
                                 start: tag.start,
                                 end: tag.end,
@@ -264,10 +267,12 @@ const Dashboard: React.FC = () => {
 async function exportCSV(groupTag: string, userId: string) {
   const currentData = await fetchData(groupTag);
 
+  debugger
   const exportContent = currentData?.map(datum => ({
     originalText: datum.originalText,
     auto: anonymizeText(datum.originalText, datum.tags),
-    user: anonymizeText(datum.originalText, datum.userTags?.[userId])
+    user: anonymizeText(datum.originalText, datum.userTags?.[userId]),
+    ...generateConfusionMatrix(datum.originalText, datum.tags, datum.userTags?.[userId])
   }));
   const csv = csvFormat(exportContent || []);
 
