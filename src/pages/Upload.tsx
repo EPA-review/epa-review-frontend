@@ -1,14 +1,17 @@
-import { IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonContent, IonHeader, IonIcon, IonInput, IonItem, IonLabel, IonLoading, IonPage, IonText, IonTitle, IonToolbar, useIonPopover } from '@ionic/react';
+import { IonButton, IonButtons, IonCard, IonCardContent, IonCardHeader, IonCardTitle, IonContent, IonHeader, IonIcon, IonInput, IonItem, IonLabel, IonList, IonLoading, IonPage, IonSelect, IonSelectOption, IonText, IonTitle, IonToolbar, useIonPopover } from '@ionic/react';
 import { csvParse, DSVRowArray } from 'd3-dsv';
 import { apps, person } from "ionicons/icons";
-import { useState } from 'react';
+import { useEffect, useState } from 'react';
 import MainMenu from '../components/MainMenu';
 import UserMenu from '../components/UserMenu';
 import ServerInfo from '../utils/ServerInfo';
+import { User } from '../utils/User';
 
 import styles from './Upload.module.css';
 
 const Upload: React.FC = () => {
+  const userId = sessionStorage.getItem('userId') || '';
+
   const [file, setFile] = useState<File>();
   const [data, setData] = useState<DSVRowArray<string>>();
   const [feedbackFieldName, setFeedbackFieldName] = useState('Feedback');
@@ -18,10 +21,26 @@ const Upload: React.FC = () => {
   const [groupTag, setGroupTag] = useState<string>();
   const [isGroupTagLookingGood, setIsGroupTagLookingGood] = useState(false);
   const [hasFinished, setHasFinished] = useState(false);
+  const [users, setUsers] = useState<User[]>();
+  const [allowedUserIds, setAllowedUserIds] = useState<User[]>();
 
   const [presentMainMenuPopover, dismissMainMenuPopover] = useIonPopover(MainMenu, { onHide: () => dismissMainMenuPopover() });
   const [presentUserMenuPopover, dismissUserMenuPopover] = useIonPopover(UserMenu, { onHide: () => dismissUserMenuPopover() });
   const [showLoading, setShowLoading] = useState(false);
+
+  useEffect(() => {
+    async function obtainUsers() {
+      const response = await fetch(
+        `${ServerInfo.SERVER_BASE_URL}/user/all`,
+        { credentials: 'include' }
+      );
+      let users: User[];
+      if (response.ok && (users = await response.json())) {
+        setUsers(users);
+      }
+    }
+    obtainUsers();
+  }, []);
 
   return (
     <IonPage>
@@ -164,14 +183,14 @@ const Upload: React.FC = () => {
               onClick={async () => {
                 if (groupTag) {
                   const response = await fetch(
-                    `${ServerInfo.SERVER_BASE_URL}/epa/fetch?groupTag=${groupTag}`,
+                    `${ServerInfo.SERVER_BASE_URL}/epa/group-availability?groupTag=${groupTag}`,
                     {
                       method: 'GET',
                       credentials: 'include'
                     }
                   );
-                  const result = await response.json() as [];
-                  if (result.length === 0) {
+                  const result = await response.json() as Boolean;
+                  if (result) {
                     setIsGroupTagLookingGood(true);
                     return;
                   }
@@ -186,6 +205,19 @@ const Upload: React.FC = () => {
             <IonCardTitle>Process your data.</IonCardTitle>
           </IonCardHeader>
           <IonCardContent>
+            <IonSelect
+              multiple
+              placeholder="Select users to share with"
+              onIonChange={({ detail }) => setAllowedUserIds(detail.value)}
+            >
+              {
+                users
+                  ?.filter(user => user._id !== userId)
+                  .map(user => (
+                    <IonSelectOption key={user._id} value={user._id}>{user.username}</IonSelectOption>
+                  ))
+              }
+            </IonSelect>
             <IonButton
               disabled={!!(file && data && isDataLookingGood && isGroupTagLookingGood && hasFinished)}
               onClick={async () => {
@@ -199,11 +231,14 @@ const Upload: React.FC = () => {
                     headers: {
                       'Content-type': 'application/json'
                     },
-                    body: JSON.stringify(data?.map(datum => ({
-                      text: datum[feedbackFieldName],
-                      residentName: datum[residentNameFieldName],
-                      observerName: datum[observerNameFieldName]
-                    })))
+                    body: JSON.stringify({
+                      data: data?.map(datum => ({
+                        text: datum[feedbackFieldName],
+                        residentName: datum[residentNameFieldName],
+                        observerName: datum[observerNameFieldName]
+                      })),
+                      allowedUserIds
+                    })
                   }
                 );
                 setShowLoading(false);
