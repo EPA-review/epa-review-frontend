@@ -11,17 +11,33 @@ import ServerInfo from '../utils/ServerInfo';
 
 import styles from './ReviewDetail.module.css';
 
+type Tag = {
+  start: number;
+  end: number;
+  name: string;
+  score: number;
+  isUserSet?: boolean | undefined;
+};
+
+type ConfusionMatrix = {
+  truePositive: number,
+  trueNegative: number,
+  falsePositive: number,
+  falseNegative: number
+};
+
 type EpaFeedback = {
   _id: string;
   originalText: string,
-  tags: { start: number, end: number, name: string, score: number, isUserSet?: boolean }[],
+  tags: Tag[],
   userTags: { [user: string]: { start: number, end: number, name: string, score: number, isUserSet: boolean }[] },
   isShowingModifiedTags: boolean,
   isEditing: boolean,
+  confusionMatrix: ConfusionMatrix,
   clickHandler: (event: Event) => void;
 };
 
-const itemCountPerPage = 30;
+const itemCountPerPage = 10;
 
 let selectPopoverValue = '';
 let entityChangeHandler: (tagName: string) => void = () => { };
@@ -62,27 +78,7 @@ const Dashboard: React.FC = () => {
           <IonButtons slot="end">
             <IonButton
               title="Export CSV"
-              onClick={async () => {
-                const currentData = await fetchData(groupTag);
-
-                const exportContent = currentData?.map(datum => ({
-                  originalText: datum.originalText,
-                  auto: anonymizeText(datum.originalText, datum.tags),
-                  user: anonymizeText(datum.originalText, datum.userTags?.[userId])
-                }));
-                const csv = csvFormat(exportContent || []);
-
-                var element = document.createElement('a');
-                element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(csv));
-                element.setAttribute('download', `${new Date().toISOString()}.csv`);
-
-                element.style.display = 'none';
-                document.body.appendChild(element);
-
-                element.click();
-
-                document.body.removeChild(element);
-              }}
+              onClick={() => exportCSV(groupTag, userId)}
             >
               <IonIcon slot="icon-only" icon={download} ></IonIcon>
             </IonButton>
@@ -109,7 +105,7 @@ const Dashboard: React.FC = () => {
                   return (
                     <IonRow key={i}>
                       <IonCol>
-                        <IonCard className={styles.card}>
+                        <IonCard className={styles.card} title={JSON.stringify(generateConfusionMatrix(originalText, tags, userTags?.[userId]))}>
                           <IonCardContent>
                             <s-magic-text ref={async el => {
                               if (el) {
@@ -265,7 +261,54 @@ const Dashboard: React.FC = () => {
   );
 };
 
-function initializeUserTags(datum: EpaFeedback, userId: string, tags: { start: number; end: number; name: string; score: number; isUserSet?: boolean | undefined; }[]) {
+async function exportCSV(groupTag: string, userId: string) {
+  const currentData = await fetchData(groupTag);
+
+  const exportContent = currentData?.map(datum => ({
+    originalText: datum.originalText,
+    auto: anonymizeText(datum.originalText, datum.tags),
+    user: anonymizeText(datum.originalText, datum.userTags?.[userId])
+  }));
+  const csv = csvFormat(exportContent || []);
+
+  var element = document.createElement('a');
+  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(csv));
+  element.setAttribute('download', `${new Date().toISOString()}.csv`);
+
+  element.style.display = 'none';
+  document.body.appendChild(element);
+
+  element.click();
+
+  document.body.removeChild(element);
+}
+
+function generateConfusionMatrix(text: string, tags: Tag[], userTags: Tag[]) {
+  const wordSplitRegEx = /\w+/g;
+  const textWordCount = text.match(wordSplitRegEx)?.map(d => d.trim()).filter(Boolean).length ?? Number.NaN;
+  const taggedItemCount = (tags?.length ?? 0) + (userTags?.filter(userTag => !tags?.find(tag => checkTwoTagOverlaying(tag, userTag)))?.length ?? 0);
+
+  return ({
+    truePositive: userTags?.filter(userTag => tags?.find(tag => checkTwoTagsSame(tag, userTag)))?.length ?? Number.NaN,
+    trueNegative: (textWordCount - taggedItemCount) ?? Number.NaN,
+    falsePositive: tags?.filter(tag => !userTags?.find(userTag => checkTwoTagsSame(tag, userTag)))?.length ?? Number.NaN,
+    falseNegative: userTags?.filter(userTag => !tags?.find(tag => checkTwoTagsSame(tag, userTag)))?.length ?? Number.NaN
+  }) as ConfusionMatrix;
+}
+
+function checkTwoTagsSame(tag1: Tag, tag2: Tag) {
+  return checkTwoTagOverlaying(tag1, tag2) && tag1.name === tag2.name;
+}
+
+function checkTwoTagOverlaying(tag1: Tag, tag2: Tag) {
+  return tag1.start <= tag2.end && tag1.end >= tag2.start;
+}
+
+function initializeUserTags(
+  datum: EpaFeedback,
+  userId: string,
+  tags: { start: number; end: number; name: string; score: number; isUserSet?: boolean | undefined; }[]
+) {
   if (!datum.userTags) {
     datum.userTags = {};
   }
