@@ -152,9 +152,7 @@ const Dashboard: React.FC = () => {
                                 });
                                 const clickHandler = (event: Event) => {
                                   const detail = (event as CustomEvent).detail;
-                                  if (!datum?.userTags[userId]) {
-                                    datum.userTags[userId] = tags.map(tag => ({ ...tag, isUserSet: false }));
-                                  }
+                                  initializeUserTags(datum, userId, tags);
                                   const currentuserTags = datum.userTags[userId];
                                   const tag = currentuserTags.find(tag => tag.start === detail.start && tag.end === detail.end);
                                   selectPopoverValue = tag?.name || '';
@@ -227,6 +225,7 @@ const Dashboard: React.FC = () => {
                             title="Submit"
                             onClick={async () => {
                               datum.isEditing = false;
+                              initializeUserTags(datum, userId, tags);
                               const tagsToUpload = datum.userTags[userId].map(tag => ({
                                 start: tag.start,
                                 end: tag.end,
@@ -291,6 +290,15 @@ const Dashboard: React.FC = () => {
     </IonPage >
   );
 };
+
+function initializeUserTags(datum: EpaFeedback, userId: string, tags: { start: number; end: number; name: string; score: number; isUserSet?: boolean | undefined; }[]) {
+  if (!datum.userTags) {
+    datum.userTags = {};
+  }
+  if (!datum?.userTags[userId]) {
+    datum.userTags[userId] = tags.map(tag => ({ ...tag, isUserSet: false }));
+  }
+}
 
 async function fetchData(groupTag: string) {
   const response = await fetch(
