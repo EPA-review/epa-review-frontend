@@ -23,8 +23,9 @@ const MainMenu: React.FC<{
     // 'Dashboard'
   ];
 
-  if(user?.roleName === 'super' || user?.roleName === 'admin') {
+  if (user?.roleName === 'super' || user?.roleName === 'admin') {
     items.push('User Management');
+    items.push('Nickname Management');
   }
 
   return (
@@ -49,5 +50,5 @@ const MainMenu: React.FC<{
 export default MainMenu;
 
 function convertNameToPath(name: string) {
-  return './#/'+(name.replace(' ', '-').toLowerCase());
+  return './#/' + (name.replace(' ', '-').toLowerCase());
 }

@@ -29,6 +29,7 @@ import UserManagement from './pages/UserManagement';
 import { useEffect, useState } from 'react';
 import { applyTheme, getActualTheme } from './utils/theme';
 import { fetchUser } from './utils/auth';
+import NicknameManagement from './pages/NicknameManagement';
 
 const App: React.FC = () => {
   const theme = getActualTheme();
@@ -67,6 +68,9 @@ const App: React.FC = () => {
           </Route>
           <Route exact path="/user-management">
             {(signedInUser?.roleName === 'super' || signedInUser?.roleName === 'admin') ? <UserManagement /> : <Redirect to="/home" />}
+          </Route>
+          <Route exact path="/nickname-management">
+            {(signedInUser?.roleName === 'super' || signedInUser?.roleName === 'admin') ? <NicknameManagement /> : <Redirect to="/home" />}
           </Route>
         </IonRouterOutlet>
       ));
