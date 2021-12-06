@@ -61,33 +61,7 @@ const Dashboard: React.FC = () => {
           <IonTitle>{groupTag}</IonTitle>
           <IonButtons slot="end">
             <IonButton
-              title="Export JSON"
-              onClick={async () => {
-                const currentData = await fetchData(groupTag);
-                const exportContent = currentData?.map(datum => ({
-                  originalText: datum.originalText,
-                  tags: datum.tags,
-                  userTags: datum.userTags
-                }));
-                const json = JSON.stringify(exportContent);
-
-                var element = document.createElement('a');
-                element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(json));
-                element.setAttribute('download', `${new Date().toISOString()}.json`);
-
-                element.style.display = 'none';
-                document.body.appendChild(element);
-
-                element.click();
-
-                document.body.removeChild(element);
-              }}
-            >
-              <IonIcon slot="icon-only" icon={download} ></IonIcon>
-            </IonButton>
-            <IonButton
               title="Export CSV"
-              color="secondary"
               onClick={async () => {
                 const currentData = await fetchData(groupTag);
 
