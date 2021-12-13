@@ -293,7 +293,7 @@ async function submit(datum: EpaFeedback, userId: string, tags: Tag[], originalT
 async function exportCSV(groupTag: string, userId: string) {
   const currentData = await fetchData(groupTag);
 
-  if (currentData?.filter(datum => !datum.userTags?.[userId])) {
+  if (currentData?.filter(datum => !datum.userTags?.[userId]?.[0])) {
     if (window.confirm('You have not yet check all records, are you sure to export?')) {
       const exportContent = currentData?.map((datum, i) => ({
         index: i + 1,
