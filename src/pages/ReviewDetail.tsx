@@ -107,6 +107,9 @@ const Dashboard: React.FC = () => {
                   }
                   return (
                     <IonRow key={i}>
+                      <IonCol size="auto">
+                        <IonCard style={{ width: '5rem', textAlign: 'center', padding: '.25rem' }} className={styles.card}>{data.indexOf(datum) + 1}</IonCard>
+                      </IonCol>
                       <IonCol>
                         <IonCard className={styles.card}>
                           <IonCardContent>
@@ -273,7 +276,8 @@ const Dashboard: React.FC = () => {
 async function exportCSV(groupTag: string, userId: string) {
   const currentData = await fetchData(groupTag);
 
-  const exportContent = currentData?.map(datum => ({
+  const exportContent = currentData?.map((datum, i) => ({
+    index: i + 1,
     originalText: datum.originalText,
     auto: anonymizeText(datum.originalText, datum.tags),
     user: anonymizeText(datum.originalText, datum.userTags?.[userId]),
