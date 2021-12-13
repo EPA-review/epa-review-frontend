@@ -189,8 +189,9 @@ const Dashboard: React.FC = () => {
                             fill={isEditing ? 'solid' : 'clear'}
                             title="Modify"
                             onClick={() => {
+                              debugger
                               datum.isEditing = !isEditing;
-                              if (datum.isEditing) {
+                              if (datum.isEditing && datum.userTags?.[userId]) {
                                 datum.currentUserTagCache = [...datum.userTags[userId]];
                               } else {
                                 datum.userTags[userId] = datum.currentUserTagCache;
