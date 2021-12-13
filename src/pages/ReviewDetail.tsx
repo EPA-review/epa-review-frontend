@@ -31,6 +31,7 @@ type EpaFeedback = {
   originalText: string,
   tags: Tag[],
   userTags: { [user: string]: { start: number, end: number, name: string, score: number, isUserSet: boolean }[] },
+  currentUserTagCache: { start: number, end: number, name: string, score: number, isUserSet: boolean }[],
   isShowingModifiedTags: boolean,
   isEditing: boolean,
   confusionMatrix: ConfusionMatrix,
@@ -186,6 +187,11 @@ const Dashboard: React.FC = () => {
                             title="Modify"
                             onClick={() => {
                               datum.isEditing = !isEditing;
+                              if (datum.isEditing) {
+                                datum.currentUserTagCache = [...datum.userTags[userId]];
+                              } else {
+                                datum.userTags[userId] = datum.currentUserTagCache;
+                              }
                               forceUpdate({});
                             }}
                           >
@@ -193,7 +199,7 @@ const Dashboard: React.FC = () => {
                           </IonButton>
                           <IonButton
                             color="success"
-                            fill={datum.userTags?.[userId] ? 'solid' : 'clear'}
+                            fill={(datum.userTags?.[userId] && !isEditing) ? 'solid' : 'clear'}
                             title="Submit"
                             onClick={async () => {
                               datum.isEditing = false;
