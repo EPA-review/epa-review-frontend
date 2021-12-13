@@ -273,7 +273,6 @@ const Dashboard: React.FC = () => {
 async function exportCSV(groupTag: string, userId: string) {
   const currentData = await fetchData(groupTag);
 
-  debugger
   const exportContent = currentData?.map(datum => ({
     originalText: datum.originalText,
     auto: anonymizeText(datum.originalText, datum.tags),
