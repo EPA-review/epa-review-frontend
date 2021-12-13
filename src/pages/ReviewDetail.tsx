@@ -276,25 +276,30 @@ const Dashboard: React.FC = () => {
 async function exportCSV(groupTag: string, userId: string) {
   const currentData = await fetchData(groupTag);
 
-  const exportContent = currentData?.map((datum, i) => ({
-    index: i + 1,
-    originalText: datum.originalText,
-    auto: anonymizeText(datum.originalText, datum.tags),
-    user: anonymizeText(datum.originalText, datum.userTags?.[userId]),
-    ...generateConfusionMatrix(datum.originalText, datum.tags, datum.userTags?.[userId])
-  }));
-  const csv = csvFormat(exportContent || []);
+  if (currentData?.filter(datum => !datum.userTags?.[userId])) {
+    if (window.confirm('You have not yet check all records, are you sure to export?')) {
+      const exportContent = currentData?.map((datum, i) => ({
+        index: i + 1,
+        originalText: datum.originalText,
+        auto: anonymizeText(datum.originalText, datum.tags),
+        user: anonymizeText(datum.originalText, datum.userTags?.[userId]),
+        ...generateConfusionMatrix(datum.originalText, datum.tags, datum.userTags?.[userId])
+      }));
+      const csv = csvFormat(exportContent || []);
 
-  var element = document.createElement('a');
-  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(csv));
-  element.setAttribute('download', `${new Date().toISOString()}.csv`);
+      var element = document.createElement('a');
+      element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(csv));
+      element.setAttribute('download', `${new Date().toISOString()}.csv`);
 
-  element.style.display = 'none';
-  document.body.appendChild(element);
+      element.style.display = 'none';
+      document.body.appendChild(element);
 
-  element.click();
+      element.click();
 
-  document.body.removeChild(element);
+      element.remove();
+    }
+  }
+
 }
 
 function generateConfusionMatrix(text: string, tags: Tag[], userTags: Tag[]) {
