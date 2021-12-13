@@ -1,7 +1,7 @@
 import { IonBackButton, IonButton, IonButtons, IonCard, IonCardContent, IonCol, IonContent, IonFab, IonFabButton, IonGrid, IonHeader, IonIcon, IonInput, IonPage, IonRow, IonTitle, IonToolbar, useIonPopover } from '@ionic/react';
 import { csvFormat } from 'd3-dsv';
 import { person, checkmark, create, swapHorizontal, download } from "ionicons/icons";
-import { useEffect, useState } from 'react';
+import { SetStateAction, useEffect, useState } from 'react';
 import { useParams } from 'react-router';
 import SelectMenu from '../components/SelectMenu';
 import UserMenu from '../components/UserMenu';
@@ -204,32 +204,7 @@ const Dashboard: React.FC = () => {
                             color="success"
                             fill={(datum.userTags?.[userId] && !isEditing) ? 'solid' : 'clear'}
                             title="Submit"
-                            onClick={async () => {
-                              datum.isEditing = false;
-                              initializeUserTags(datum, userId, tags);
-                              datum.confusionMatrix = generateConfusionMatrix(originalText, tags, userTags?.[userId]);
-                              const tagsToUpload = datum.userTags[userId].map(tag => ({
-                                start: tag.start,
-                                end: tag.end,
-                                name: tag.name,
-                                score: tag.score,
-                                isUserSet: tag.isUserSet
-                              }));
-                              const response = await fetch(
-                                `${ServerInfo.SERVER_BASE_URL}/epa/user-tags?_id=${datum._id}`,
-                                {
-                                  method: 'PUT',
-                                  credentials: 'include',
-                                  headers: {
-                                    'Content-type': 'application/json'
-                                  },
-                                  body: JSON.stringify(tagsToUpload)
-                                }
-                              );
-                              if (response.ok) {
-                                forceUpdate({});
-                              }
-                            }}
+                            onClick={() => submit(datum, userId, tags, originalText, userTags, forceUpdate)}
                           >
                             <IonIcon slot="icon-only" icon={checkmark}></IonIcon>
                           </IonButton>
@@ -268,10 +243,52 @@ const Dashboard: React.FC = () => {
             onClick={() => setPage(+page + 1)}
           >{'>'}</IonFabButton>
         </IonFab>
+        <IonFab
+          vertical="bottom"
+          horizontal="end"
+          slot="fixed"
+        >
+          <IonFabButton
+            disabled={!data?.slice(itemCountPerPage * (page - 1), itemCountPerPage * page)?.filter(datum => !datum?.userTags?.[userId])?.[0]}
+            color="success"
+            onClick={() => {
+              data?.slice(itemCountPerPage * (page - 1), itemCountPerPage * page)?.forEach(datum => submit(datum, userId, datum.tags, datum.originalText, datum.userTags, forceUpdate));
+            }}
+          >
+            <IonIcon icon={checkmark}></IonIcon>
+          </IonFabButton>
+        </IonFab>
       </IonContent>
     </IonPage >
   );
 };
+
+async function submit(datum: EpaFeedback, userId: string, tags: Tag[], originalText: string, userTags: { [user: string]: { start: number; end: number; name: string; score: number; isUserSet: boolean; }[]; }, forceUpdate: { (value: SetStateAction<{}>): void; (arg0: {}): void; }) {
+  datum.isEditing = false;
+  initializeUserTags(datum, userId, tags);
+  datum.confusionMatrix = generateConfusionMatrix(originalText, tags, userTags?.[userId]);
+  const tagsToUpload = datum.userTags[userId].map(tag => ({
+    start: tag.start,
+    end: tag.end,
+    name: tag.name,
+    score: tag.score,
+    isUserSet: tag.isUserSet
+  }));
+  const response = await fetch(
+    `${ServerInfo.SERVER_BASE_URL}/epa/user-tags?_id=${datum._id}`,
+    {
+      method: 'PUT',
+      credentials: 'include',
+      headers: {
+        'Content-type': 'application/json'
+      },
+      body: JSON.stringify(tagsToUpload)
+    }
+  );
+  if (response.ok) {
+    forceUpdate({});
+  }
+}
 
 async function exportCSV(groupTag: string, userId: string) {
   const currentData = await fetchData(groupTag);
