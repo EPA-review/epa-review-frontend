@@ -250,6 +250,7 @@ const Dashboard: React.FC = () => {
           slot="fixed"
         >
           <IonFabButton
+            title='Check all on this page'
             disabled={!data?.slice(itemCountPerPage * (page - 1), itemCountPerPage * page)?.filter(datum => !datum?.userTags?.[userId])?.[0]}
             color="success"
             onClick={() => {
