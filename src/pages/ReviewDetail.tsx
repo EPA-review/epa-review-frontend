@@ -107,7 +107,7 @@ const Dashboard: React.FC = () => {
                   return (
                     <IonRow key={i}>
                       <IonCol>
-                        <IonCard className={styles.card} title={JSON.stringify(datum.confusionMatrix)}>
+                        <IonCard className={styles.card}>
                           <IonCardContent>
                             <s-magic-text ref={async el => {
                               if (el) {
