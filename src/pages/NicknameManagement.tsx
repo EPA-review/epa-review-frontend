@@ -1,4 +1,4 @@
-import { IonBadge, IonButton, IonButtons, IonContent, IonFab, IonFabButton, IonHeader, IonIcon, IonInput, IonItem, IonList, IonPage, IonText, IonTitle, IonToolbar, useIonPopover } from '@ionic/react';
+import { IonBadge, IonButton, IonButtons, IonContent, IonFab, IonFabButton, IonHeader, IonIcon, IonItem, IonList, IonPage, IonText, IonTitle, IonToolbar, useIonPopover } from '@ionic/react';
 import { add, apps, checkmark, close, cloudUpload, download, person } from "ionicons/icons";
 import { useEffect, useState } from 'react';
 import MainMenu from '../components/MainMenu';
@@ -96,21 +96,17 @@ const NicknameManagement: React.FC = () => {
                     >{nickname}</IonBadge>
                   ))
                 }
-                <IonItem slot="end" >
-                  <IonInput className="nickname-input" placeholder="New Nickname" />
-                  <IonButton onClick={event => {
-                    const target = event.currentTarget;
-                    const nicknameInput = (target.parentElement?.querySelector('.nickname-input') as HTMLInputElement);
-                    const newNickname = nicknameInput?.value;
-                    if (nicknameDict?.[name]) {
+                <IonButton
+                  slot="end"
+                  onClick={event => {
+                    const newNickname = window.prompt('Enter a nickname:');
+                    if (newNickname && nicknameDict?.[name]) {
                       nicknameDict?.[name].push(newNickname);
-                      nicknameInput.value = '';
                       setNicknameDict({ ...nicknameDict });
                     }
                   }}>
-                    <IonIcon slot="icon-only" icon={add}></IonIcon>
-                  </IonButton>
-                </IonItem>
+                  <IonIcon slot="icon-only" icon={add}></IonIcon>
+                </IonButton>
                 <IonButton
                   slot="end"
                   onClick={() => {
@@ -137,7 +133,7 @@ const NicknameManagement: React.FC = () => {
             title="Add"
             onClick={() => {
               const newName = window.prompt('Enter a name:');
-              if (nicknameDict && newName) {
+              if (nicknameDict && newName && !nicknameDict[newName]) {
                 nicknameDict[newName] = [];
                 setNicknameDict({ ...nicknameDict });
               }
@@ -149,6 +145,9 @@ const NicknameManagement: React.FC = () => {
             title="Submit"
             color="success"
             onClick={async () => {
+              const correctedDict = { ...nicknameDict } || {};
+              Object.keys(correctedDict).forEach(name => correctedDict[name] = correctedDict[name].filter(Boolean))
+
               const response = await fetch(
                 `${ServerInfo.SERVER_BASE_URL}/nickname`,
                 {
@@ -162,6 +161,7 @@ const NicknameManagement: React.FC = () => {
               );
               if (response.ok) {
                 window.alert('Updated.');
+                setNicknameDict({ ...correctedDict });
               } else {
                 window.alert('Fail to update.');
               }
