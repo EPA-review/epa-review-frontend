@@ -20,6 +20,7 @@ const Upload: React.FC = () => {
   const [isDataLookingGood, setIsDataLookingGood] = useState(false);
   const [groupTag, setGroupTag] = useState<string>();
   const [isGroupTagLookingGood, setIsGroupTagLookingGood] = useState(false);
+  const [isAllowedUsersLookingGood, setIsSharedUserLookingGood] = useState(false);
   const [hasFinished, setHasFinished] = useState(false);
   const [users, setUsers] = useState<User[]>();
   const [allowedUserIds, setAllowedUserIds] = useState<User[]>();
@@ -71,189 +72,211 @@ const Upload: React.FC = () => {
           onDidDismiss={() => setShowLoading(false)}
           message={'Uploading...'}
         />
-        <IonCard className={styles.card}>
-          <IonCardHeader>
-            <IonCardTitle>Upload your CSV file.</IonCardTitle>
-          </IonCardHeader>
-          <IonCardContent>
-            <IonButton
-              disabled={!!(file && data)}
-              onClick={async () => {
-                const fileHandle = (await (window as any).showOpenFilePicker())?.[0];
-                const file = await fileHandle.getFile() as File;
-                setFile(file);
-                const fileContent = await file?.text();
-                const data = csvParse(fileContent || '');
-                if (data.length > 0) {
-                  setData(data);
-                }
-              }}
-            >Select File</IonButton>
-            <br />
-            <IonText>{`${file ? `${file.name} - ${data ? `${data.length} Records` : 'Not Loaded'}` : ''}`}</IonText>
-          </IonCardContent>
-        </IonCard>
-        <IonCard className={styles.card} disabled={!(file && data)}>
-          <IonCardHeader>
-            <IonCardTitle>Preview your data and config the name of <b>Feedback</b> field.</IonCardTitle>
-          </IonCardHeader>
-          <IonCardContent>
-            {
-              data &&
-              <table>
-                <caption><h2>Below are up to first 10 records</h2></caption>
-                <thead>
-                  <tr>
-                    {data?.columns.map((columnName, i) => (
-                      <th key={i}>{columnName}</th>
-                    ))}
-                  </tr>
-                </thead>
-                <tbody>
-                  {
-                    data?.slice(0, 10).map((row, i) => (
-                      <tr key={i}>
-                        {
-                          Object.values(row).map((columnValue, i) => (
-                            <td key={i}>{columnValue}</td>
-                          ))
-                        }
-                      </tr>
-                    ))
-                  }
-                </tbody>
-              </table>
-            }
-            <IonItem>
-              <IonLabel position="stacked">Name of <b>Feedback</b> field</IonLabel>
-              <IonInput
-                disabled={!!(file && data && isDataLookingGood)}
-                value={feedbackFieldName}
-                onIonChange={({ detail }) => setFeedbackFieldName(detail.value || '')}
-              ></IonInput>
-            </IonItem>
-            <IonItem>
-              <IonLabel position="stacked">Name of <b>Resident Name</b> field</IonLabel>
-              <IonInput
-                disabled={!!(file && data && isDataLookingGood)}
-                value={residentNameFieldName}
-                onIonChange={({ detail }) => setResidentNameFieldName(detail.value || '')}
-              ></IonInput>
-            </IonItem>
-            <IonItem>
-              <IonLabel position="stacked">Name of <b>Observer Name</b> field</IonLabel>
-              <IonInput
-                disabled={!!(file && data && isDataLookingGood)}
-                value={observerNameFieldName}
-                onIonChange={({ detail }) => setObserverNameFieldName(detail.value || '')}
-              ></IonInput>
-            </IonItem>
-            <IonButton
-              disabled={!!(file && data && isDataLookingGood)}
-              onClick={async () => {
-                setIsDataLookingGood(true);
-              }}
-            >Looks Good</IonButton>
-            <IonButton
-              fill="outline"
-              disabled={!!(file && data && isDataLookingGood)}
-              onClick={async () => {
-                setFile(undefined);
-                setData(undefined);
-              }}
-            >Go Back</IonButton>
-          </IonCardContent>
-        </IonCard>
-        <IonCard className={styles.card} disabled={!(file && data && isDataLookingGood)}>
-          <IonCardHeader>
-            <IonCardTitle>Set a group tag name.</IonCardTitle>
-          </IonCardHeader>
-          <IonCardContent>
-            <IonItem>
-              <IonLabel position="stacked">Tag Name</IonLabel>
-              <IonInput
-                disabled={!!(file && data && isDataLookingGood && isGroupTagLookingGood)}
-                value={groupTag}
-                placeholder="Input your group tag here..."
-                onIonChange={({ detail }) => setGroupTag(detail.value || '')}
-              ></IonInput>
-            </IonItem>
-            <IonButton
-              disabled={!!(file && data && isDataLookingGood && isGroupTagLookingGood)}
-              onClick={async () => {
-                if (groupTag) {
-                  const response = await fetch(
-                    `${ServerInfo.SERVER_BASE_URL}/epa/group-availability?groupTag=${groupTag}`,
-                    {
-                      method: 'GET',
-                      credentials: 'include'
-                    }
-                  );
-                  const result = await response.json() as Boolean;
-                  if (result) {
-                    setIsGroupTagLookingGood(true);
-                    return;
-                  }
-                }
-                alert('The group tag name is not available, please try another one.')
-              }}
-            >Looks Good</IonButton>
-          </IonCardContent>
-        </IonCard>
+        {renderUploadFileCard()}
+        {renderColumnSelectionCard()}
+        {renderSettingDatasetNameCard()}
         <IonCard className={styles.card} disabled={!(file && data && isDataLookingGood && isGroupTagLookingGood)}>
           <IonCardHeader>
-            <IonCardTitle>Process your data.</IonCardTitle>
+            <IonCardTitle>Select other users that you would like to have access to this data.</IonCardTitle>
           </IonCardHeader>
           <IonCardContent>
             <IonSelect
               multiple
+              disabled={!!(file && data && isDataLookingGood && isGroupTagLookingGood && isAllowedUsersLookingGood)}
               placeholder="Select users to share with"
               onIonChange={({ detail }) => setAllowedUserIds(detail.value)}
             >
-              {
-                users
-                  ?.filter(user => user._id !== userId)
-                  .map(user => (
-                    <IonSelectOption key={user._id} value={user._id}>{user.username}</IonSelectOption>
-                  ))
-              }
+              {users
+                ?.filter(user => user._id !== userId)
+                .map(user => (
+                  <IonSelectOption key={user._id} value={user._id}>{user.username}</IonSelectOption>
+                ))}
             </IonSelect>
             <IonButton
-              disabled={!!(file && data && isDataLookingGood && isGroupTagLookingGood && hasFinished)}
+              disabled={!!(file && data && isDataLookingGood && isGroupTagLookingGood && isAllowedUsersLookingGood)}
               onClick={async () => {
-                setHasFinished(true);
-                setShowLoading(true);
-                const response = await fetch(
-                  `${ServerInfo.SERVER_BASE_URL}/epa/upload?groupTag=${groupTag}`,
-                  {
-                    method: 'POST',
-                    credentials: 'include',
-                    headers: {
-                      'Content-type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                      data: data?.map(datum => ({
-                        text: datum[feedbackFieldName],
-                        residentName: datum[residentNameFieldName],
-                        observerName: datum[observerNameFieldName]
-                      })),
-                      allowedUserIds
-                    })
-                  }
-                );
-                setShowLoading(false);
-                if (response.ok) {
-                  alert('Upload finished.');
-                } else {
-                  alert('Upload Failed.');
-                }
+                setIsSharedUserLookingGood(true);
               }}
-            >Start</IonButton>
+            >Looks Good</IonButton>
           </IonCardContent>
         </IonCard>
+        {renderConfirmCard()}
       </IonContent>
     </IonPage>
   );
+
+  function renderConfirmCard() {
+    return <IonCard className={styles.card} disabled={!(file && data && isDataLookingGood && isGroupTagLookingGood && isAllowedUsersLookingGood)}>
+      <IonCardHeader>
+        <IonCardTitle>Process your data.</IonCardTitle>
+      </IonCardHeader>
+      <IonCardContent>
+        <IonButton
+          disabled={!!(file && data && isDataLookingGood && isGroupTagLookingGood && hasFinished)}
+          onClick={async () => {
+            setHasFinished(true);
+            setShowLoading(true);
+            const response = await fetch(
+              `${ServerInfo.SERVER_BASE_URL}/epa/upload?groupTag=${groupTag}`,
+              {
+                method: 'POST',
+                credentials: 'include',
+                headers: {
+                  'Content-type': 'application/json'
+                },
+                body: JSON.stringify({
+                  data: data?.map(datum => ({
+                    text: datum[feedbackFieldName],
+                    residentName: datum[residentNameFieldName],
+                    observerName: datum[observerNameFieldName]
+                  })),
+                  allowedUserIds
+                })
+              }
+            );
+            setShowLoading(false);
+            if (response.ok) {
+              alert('Upload finished.');
+            } else {
+              alert('Upload Failed.');
+            }
+          }}
+        >Start</IonButton>
+      </IonCardContent>
+    </IonCard>;
+  }
+
+  function renderSettingDatasetNameCard() {
+    return <IonCard className={styles.card} disabled={!(file && data && isDataLookingGood)}>
+      <IonCardHeader>
+        <IonCardTitle>Name this dataset.</IonCardTitle>
+      </IonCardHeader>
+      <IonCardContent>
+        <IonItem>
+          <IonLabel position="stacked">Dataset Name</IonLabel>
+          <IonInput
+            disabled={!!(file && data && isDataLookingGood && isGroupTagLookingGood)}
+            value={groupTag}
+            placeholder="Input your group tag here..."
+            onIonChange={({ detail }) => setGroupTag(detail.value || '')}
+          ></IonInput>
+        </IonItem>
+        <IonButton
+          disabled={!!(file && data && isDataLookingGood && isGroupTagLookingGood)}
+          onClick={async () => {
+            if (groupTag) {
+              const response = await fetch(
+                `${ServerInfo.SERVER_BASE_URL}/epa/group-availability?groupTag=${groupTag}`,
+                {
+                  method: 'GET',
+                  credentials: 'include'
+                }
+              );
+              const result = await response.json() as Boolean;
+              if (result) {
+                setIsGroupTagLookingGood(true);
+                return;
+              }
+            }
+            alert('The group tag name is not available, please try another one.');
+          }}
+        >Looks Good</IonButton>
+      </IonCardContent>
+    </IonCard>;
+  }
+
+  function renderColumnSelectionCard() {
+    return <IonCard className={styles.card} disabled={!(file && data)}>
+      <IonCardHeader>
+        <IonCardTitle>Preview your data and label the feedback and name columns below.</IonCardTitle>
+      </IonCardHeader>
+      <IonCardContent>
+        {data &&
+          <table>
+            <caption><h2>Below are up to first 10 records</h2></caption>
+            <thead>
+              <tr>
+                {data?.columns.map((columnName, i) => (
+                  <th key={i}>{columnName}</th>
+                ))}
+              </tr>
+            </thead>
+            <tbody>
+              {data?.slice(0, 10).map((row, i) => (
+                <tr key={i}>
+                  {Object.values(row).map((columnValue, i) => (
+                    <td key={i}>{columnValue}</td>
+                  ))}
+                </tr>
+              ))}
+            </tbody>
+          </table>}
+        <IonItem>
+          <IonLabel position="stacked">Title of the column containing narrative feedback</IonLabel>
+          <IonInput
+            disabled={!!(file && data && isDataLookingGood)}
+            value={feedbackFieldName}
+            onIonChange={({ detail }) => setFeedbackFieldName(detail.value || '')}
+          ></IonInput>
+        </IonItem>
+        <IonItem>
+          <IonLabel position="stacked">Title of the column containing resident names</IonLabel>
+          <IonInput
+            disabled={!!(file && data && isDataLookingGood)}
+            value={residentNameFieldName}
+            onIonChange={({ detail }) => setResidentNameFieldName(detail.value || '')}
+          ></IonInput>
+        </IonItem>
+        <IonItem>
+          <IonLabel position="stacked">Title of the column containing observer names</IonLabel>
+          <IonInput
+            disabled={!!(file && data && isDataLookingGood)}
+            value={observerNameFieldName}
+            onIonChange={({ detail }) => setObserverNameFieldName(detail.value || '')}
+          ></IonInput>
+        </IonItem>
+        <IonButton
+          disabled={!!(file && data && isDataLookingGood)}
+          onClick={async () => {
+            setIsDataLookingGood(true);
+          }}
+        >Looks Good</IonButton>
+        <IonButton
+          fill="outline"
+          disabled={!!(file && data && isDataLookingGood)}
+          onClick={async () => {
+            setFile(undefined);
+            setData(undefined);
+          }}
+        >Go Back</IonButton>
+      </IonCardContent>
+    </IonCard>;
+  }
+
+  function renderUploadFileCard() {
+    return <IonCard className={styles.card}>
+      <IonCardHeader>
+        <IonCardTitle>Upload your CSV file.</IonCardTitle>
+      </IonCardHeader>
+      <IonCardContent>
+        <IonButton
+          disabled={!!(file && data)}
+          onClick={async () => {
+            const fileHandle = (await (window as any).showOpenFilePicker())?.[0];
+            const file = await fileHandle.getFile() as File;
+            setFile(file);
+            const fileContent = await file?.text();
+            const data = csvParse(fileContent || '');
+            if (data.length > 0) {
+              setData(data);
+            }
+          }}
+        >Select File</IonButton>
+        <br />
+        <IonText>{`${file ? `${file.name} - ${data ? `${data.length} Records` : 'Not Loaded'}` : ''}`}</IonText>
+      </IonCardContent>
+    </IonCard>;
+  }
 };
 
 export default Upload;
