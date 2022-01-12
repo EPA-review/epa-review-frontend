@@ -295,30 +295,32 @@ async function submit(datum: EpaFeedback, userId: string, tags: Tag[], originalT
 async function exportCSV(groupTag: string, userId: string) {
   const currentData = await fetchData(groupTag);
 
-  if (currentData?.filter(datum => !datum.userTags?.[userId]?.[0])) {
-    if (window.confirm('You have not yet check all records, are you sure to export?')) {
-      const exportContent = currentData?.map((datum, i) => ({
-        index: i + 1,
-        originalText: datum.originalText,
-        auto: anonymizeText(datum.originalText, datum.tags),
-        user: anonymizeText(datum.originalText, datum.userTags?.[userId]),
-        ...generateConfusionMatrix(datum.originalText, datum.tags, datum.userTags?.[userId])
-      }));
-      const csv = csvFormat(exportContent || []);
-
-      var element = document.createElement('a');
-      element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(csv));
-      element.setAttribute('download', `${new Date().toISOString()}.csv`);
-
-      element.style.display = 'none';
-      document.body.appendChild(element);
-
-      element.click();
-
-      element.remove();
+  const dataCount = currentData?.length || 0;
+  const reviewedDataCount = currentData?.filter(datum => datum.userTags?.[userId]).length || 0;
+  if (dataCount > reviewedDataCount) {
+    if (!window.confirm(`You have not yet checked all records (${reviewedDataCount} of ${dataCount} checked), are you sure you are ready to export?`)) {
+      return;
     }
   }
+  const exportContent = currentData?.map((datum, i) => ({
+    index: i + 1,
+    originalText: datum.originalText,
+    auto: anonymizeText(datum.originalText, datum.tags),
+    user: anonymizeText(datum.originalText, datum.userTags?.[userId]),
+    ...generateConfusionMatrix(datum.originalText, datum.tags, datum.userTags?.[userId])
+  }));
+  const csv = csvFormat(exportContent || []);
 
+  var element = document.createElement('a');
+  element.setAttribute('href', 'data:text/plain;charset=utf-8,' + encodeURIComponent(csv));
+  element.setAttribute('download', `${new Date().toISOString()}.csv`);
+
+  element.style.display = 'none';
+  document.body.appendChild(element);
+
+  element.click();
+
+  element.remove();
 }
 
 function generateConfusionMatrix(text: string, tags: Tag[], userTags: Tag[]) {
