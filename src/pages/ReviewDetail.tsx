@@ -257,7 +257,7 @@ const Dashboard: React.FC = () => {
               data?.slice(itemCountPerPage * (page - 1), itemCountPerPage * page)?.forEach(datum => submit(datum, userId, datum.tags, datum.originalText, datum.userTags, forceUpdate));
             }}
           >
-            <IonIcon icon={checkmark}></IonIcon>
+            <IonIcon icon={checkmark} style={{ pointerEvents: 'none' }}></IonIcon>
           </IonFabButton>
         </IonFab>
       </IonContent>
