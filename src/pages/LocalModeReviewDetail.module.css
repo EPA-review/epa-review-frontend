@@ -1,0 +1,13 @@
+.card {
+  height: 100%;
+  margin: 0;
+}
+
+.page-switch-fab-container {
+  transform: translateX(-50%);
+}
+
+.page-switch-fab {
+  display: inline-block;
+  margin: 0.5em;
+}
