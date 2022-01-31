@@ -11,7 +11,6 @@ import {
   IonInput,
   IonItem,
   IonLabel,
-  IonLoading,
   IonPage,
   IonText,
   IonTitle,
@@ -27,6 +26,7 @@ let pythonDeidentifier: any;
 const LocalModeLoadNew: React.FC = () => {
   const [file, setFile] = useState<File>();
   const [data, setData] = useState<DSVRowArray<string>>();
+  const [nicknameDictionary, setNicknameDictionary] = useState<any>();
   const [feedbackFieldName, setFeedbackFieldName] = useState("Feedback");
   const [residentNameFieldName, setResidentNameFieldName] =
     useState("Resident Name");
@@ -50,6 +50,7 @@ const LocalModeLoadNew: React.FC = () => {
       </IonHeader>
       <IonContent>
         {renderLoadDatasetCard()}
+        {renderLoadNicknamesCard()}
         {renderColumnSelectionCard()}
       </IonContent>
     </IonPage>
@@ -57,7 +58,7 @@ const LocalModeLoadNew: React.FC = () => {
 
   function renderLoadDatasetCard() {
     return (
-      <IonCard>
+      <IonCard disabled={!!(file && data)}>
         <IonCardHeader>
           <IonCardTitle>Load your CSV File.</IonCardTitle>
         </IonCardHeader>
@@ -78,9 +79,46 @@ const LocalModeLoadNew: React.FC = () => {
     );
   }
 
+  function renderLoadNicknamesCard() {
+    return (
+      <IonCard disabled={!(file && data) || nicknameDictionary}>
+        <IonCardHeader>
+          <IonCardTitle>Load your nickname dictionary file.</IonCardTitle>
+        </IonCardHeader>
+        <IonCardContent>
+          <IonButton onClick={() => loadNicknameDictionaryFile()}>
+            Select File
+          </IonButton>
+          <br />
+          <IonButton onClick={() => loadNicknameDictionaryFile(true)}>
+            Use Default
+          </IonButton>
+          <IonButton
+            fill="outline"
+            onClick={() => window.open("./assets/nicknames.json")}
+          >
+            Check default nickname dictionary
+          </IonButton>
+          <br />
+          <IonButton
+            fill="outline"
+            onClick={async () => {
+              setFile(undefined);
+              setData(undefined);
+            }}
+          >
+            Go Back
+          </IonButton>
+          <br />
+          {file && data && nicknameDictionary && <IonText>Loaded.</IonText>}
+        </IonCardContent>
+      </IonCard>
+    );
+  }
+
   function renderColumnSelectionCard() {
     return (
-      <IonCard disabled={!(file && data) || processing}>
+      <IonCard disabled={!(file && data && nicknameDictionary) || processing}>
         <IonCardHeader>
           <IonCardTitle>
             Preview your data and label the feedback and name columns below.
@@ -149,8 +187,7 @@ const LocalModeLoadNew: React.FC = () => {
           <IonButton
             fill="outline"
             onClick={async () => {
-              setFile(undefined);
-              setData(undefined);
+              setNicknameDictionary(undefined);
             }}
           >
             Go Back
@@ -163,12 +200,29 @@ const LocalModeLoadNew: React.FC = () => {
   async function loadCSVFile() {
     const fileHandle = (await (window as any).showOpenFilePicker())?.[0];
     const file = (await fileHandle.getFile()) as File;
-    debugger;
     setFile(file);
     const fileContent = await file?.text();
     const data = csvParse(fileContent || "");
     if (data.length > 0) {
       setData(data);
+    }
+  }
+
+  async function loadNicknameDictionaryFile(useDefault?: boolean) {
+    if (useDefault) {
+      const response = await fetch("./assets/nicknames.json");
+      setNicknameDictionary(await response.json());
+    } else {
+      const fileHandle = (await (window as any).showOpenFilePicker())?.[0];
+      const file = (await fileHandle.getFile()) as File;
+      setFile(file);
+      const fileContent = await file?.text();
+      try {
+        const data = JSON.parse(fileContent);
+        setNicknameDictionary(data);
+      } catch {
+        alert("The file is invalid.");
+      }
     }
   }
 
@@ -226,7 +280,7 @@ const LocalModeLoadNew: React.FC = () => {
               originalText: epaRecord.text,
               residentName: epaRecord.residentName,
               observerName: epaRecord.observerName,
-              tags: (await deidentify(epaRecord.text || "", names, {})).map(
+              tags: (await deidentify(epaRecord.text || "", names, nicknameDictionary)).map(
                 (analyzerResult: { [x: string]: any }) => ({
                   ...analyzerResult,
                   name: analyzerResult["label"],
