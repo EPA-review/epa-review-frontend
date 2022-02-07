@@ -45,11 +45,11 @@
     "workbox-streams": "^5.1.4"
   },
   "scripts": {
-    "start": "react-scripts start",
-    "start.no-browser": "BROWSER=none react-scripts start",
-    "build": "react-scripts build",
-    "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "start": "react-app-rewired start",
+    "start.no-browser": "BROWSER=none react-app-rewired start",
+    "build": "react-app-rewired build",
+    "test": "react-app-rewired test",
+    "eject": "react-app-rewired eject"
   },
   "eslintConfig": {
     "extends": [
@@ -71,7 +71,8 @@
   },
   "devDependencies": {
     "@capacitor/cli": "3.0.0",
-    "@types/d3-dsv": "^3.0.0"
+    "@types/d3-dsv": "^3.0.0",
+    "react-app-rewired": "^2.1.11"
   },
   "description": "An Ionic project"
 }
