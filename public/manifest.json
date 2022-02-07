@@ -27,7 +27,8 @@
     {
       "action": "./#/local/review",
       "accept": {
-        "text/*": [".deid"]
+        "application/json": [".deid"],
+        "text/plain": [".deid"]
       }
     }
   ]
