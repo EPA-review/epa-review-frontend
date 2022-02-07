@@ -10,7 +10,7 @@
     {
       "src": "assets/icon/icon_144.png",
       "sizes": "144x144",
-      "type": "image/x-icon"
+      "type": "image/png"
     },
     {
       "src": "assets/icon/icon.png",
