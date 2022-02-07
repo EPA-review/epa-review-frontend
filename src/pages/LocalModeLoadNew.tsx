@@ -323,11 +323,12 @@ const LocalModeLoadNew: React.FC = () => {
 
   async function loadDeidentifier() {
     pyodide = await (window as any).loadPyodide({
-      indexURL: `${window.location.origin}${window.location.pathname}/pyodide`,
+      indexURL: `${window.location.origin}${window.location.pathname.replace(
+        /\/$/,
+        ""
+      )}/pyodide`,
     });
-    const response = await fetch(
-      "./deidentifier.py"
-    );
+    const response = await fetch("./deidentifier.py");
     const pythonScript = await response.text();
     pyodide.runPython(pythonScript);
     pythonDeidentifier = pyodide.runPython(`AnonymizeText`);
