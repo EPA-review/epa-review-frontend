@@ -1,6 +1,6 @@
 {
-  "short_name": "EPAReview",
-  "name": "EPA Review",
+  "short_name": "EPA Deid",
+  "name": "EPA Deidentification (Local Mode)",
   "icons": [
     {
       "src": "assets/icon/favicon.png",
@@ -14,7 +14,7 @@
       "purpose": "maskable"
     }
   ],
-  "start_url": ".",
+  "start_url": "./#/local",
   "display": "standalone",
   "theme_color": "#ffffff",
   "background_color": "#ffffff"
