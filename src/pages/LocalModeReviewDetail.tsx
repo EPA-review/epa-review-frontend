@@ -14,6 +14,7 @@ import {
   IonInput,
   IonPage,
   IonRow,
+  IonText,
   IonTitle,
   IonToolbar,
   useIonPopover,
@@ -89,10 +90,42 @@ const LocalModeReviewDetail: React.FC = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent>
-        {!file && "Please load a project file."}
+        {!file && (
+          <IonText>
+            The formatted 'Project File' that you downloaded to your computer
+            can be opened within this webpage and reviewed. To start, click the
+            'open' button in the top right corner of the page and select the
+            formatted dataset you downloaded to your computer (it should have a
+            .deid file format). This will display the EPA narratives from the
+            file with names and pronouns identified to the best of our program's
+            ability. Edits that you make to the deidentification within the
+            review page will be saved within the '.deid' file on your desktop
+            and can be opened again later for further review as needed. When you
+            have completed your review and modification to the deidentification,
+            select the 'download' button in the top right-hand corner to
+            download a CSV containing your deidentified narrative data.
+          </IonText>
+        )}
         {file && !data && <h1>Data not loaded.</h1>}
         {file && data && (
           <>
+            <IonText>
+              Below you should see your narrative data with trainee names and
+              pronouns highlighted for review. If you identify an error, select
+              the yellow button to the right of the narrative to modify the
+              deidentification of that narrative. You will then be able to click
+              the word that was correctly or incorrectly identified as a name,
+              nickname, or pronoun. Clicking on it will allow you to add or
+              remove the label. When it has been edited to correct the error (or
+              if it did not have any errors), click the green checkmark to the
+              right of the narrative to identify that it has been completely
+              deidentified. If you would like to toggle between the original
+              tags and those that you have modified, you can do so by clicking
+              the blue button. When you have completed your review and
+              modification to the deidentification, select the 'download' button
+              in the top right hand corner to download a CSV containing your
+              deidentified narrative data.
+            </IonText>
             {renderMainView()}
             {renderPageControl()}
             {renderCheckAllButton()}

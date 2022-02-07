@@ -16,7 +16,7 @@ import {
   IonTitle,
   IonToolbar,
 } from "@ionic/react";
-import { csvParse, DSVRowArray } from "d3-dsv";
+import { csvFormat, csvParse, DSVRowArray } from "d3-dsv";
 import { useEffect, useState } from "react";
 import { EpaRecord } from "../utils/epa-record";
 
@@ -43,7 +43,7 @@ const LocalModeLoadNew: React.FC = () => {
       <IonHeader>
         <IonToolbar>
           <IonButtons slot="start">
-            <IonBackButton defaultHref="./#/local" />
+            <IonBackButton defaultHref="." />
           </IonButtons>
           <IonTitle>Load New Dataset (Local Mode)</IonTitle>
         </IonToolbar>
@@ -61,6 +61,12 @@ const LocalModeLoadNew: React.FC = () => {
       <IonCard disabled={!!(file && data)}>
         <IonCardHeader>
           <IonCardTitle>Load your CSV File.</IonCardTitle>
+          <IonText>
+            Select the CSV file containing the dataset that you would like to
+            deidentify. Please note that this file will NOT be uploaded to our
+            servers, but reformatted on your local system into a new file for
+            you to download.
+          </IonText>
         </IonCardHeader>
         <IonCardContent>
           <IonButton disabled={!!(file && data)} onClick={() => loadCSVFile()}>
@@ -84,20 +90,45 @@ const LocalModeLoadNew: React.FC = () => {
       <IonCard disabled={!(file && data) || nicknameDictionary}>
         <IonCardHeader>
           <IonCardTitle>Load your nickname dictionary file.</IonCardTitle>
+          <IonText>
+            <p>
+              A dictionary of nicknames that is customized for your own dataset
+              can be used instead of our default nickname dictionary. The
+              nickname dictionary is used to ensure that commonly used nicknames
+              (e.g. a trainee named 'Samantha' that is sometimes referred to as
+              'Sam') appearing in your data are deidentified correctly.
+            </p>
+            <p>
+              - Click 'Use the Default Nickname Dictionary' to use our
+              pre-existing nickname dictionary.
+            </p>
+            <p>
+              - Click 'Download the Default Nickname Dictionary' to review and
+              add names as needed.{" "}
+            </p>
+            <p>
+              - Click 'Select a Nickname Dictionary File' to select a nickname
+              dictionary file from your own computer.
+            </p>
+            <p>
+              - Click 'Go back' to select a different CSV file for
+              deidentification
+            </p>
+          </IonText>
         </IonCardHeader>
         <IonCardContent>
           <IonButton onClick={() => loadNicknameDictionaryFile()}>
-            Select File
+            Select a Nickname Dictionary File
           </IonButton>
           <br />
           <IonButton onClick={() => loadNicknameDictionaryFile(true)}>
-            Use Default
+            Use the Default Nickname Dictionary
           </IonButton>
           <IonButton
             fill="outline"
-            onClick={() => window.open("./assets/nicknames.json")}
+            onClick={() => exportDefaultNicknameDictionaryFile()}
           >
-            Check default nickname dictionary
+            Download the Default Nickname Dictionary
           </IonButton>
           <br />
           <IonButton
@@ -123,6 +154,15 @@ const LocalModeLoadNew: React.FC = () => {
           <IonCardTitle>
             Preview your data and label the feedback and name columns below.
           </IonCardTitle>
+          <IonText>
+            <p>
+              The deidentification tool needs to know which columns of your
+              dataset contain the trainee name, observer name, and narrative
+              feedback. Review the sample data that is displayed below and
+              indicate the title of the columns containing the narrative
+              feedback, trainee names, and observer names below.
+            </p>
+          </IonText>
         </IonCardHeader>
         <IonCardContent>
           {data && (
@@ -161,7 +201,7 @@ const LocalModeLoadNew: React.FC = () => {
           </IonItem>
           <IonItem>
             <IonLabel position="stacked">
-              Title of the column containing resident names
+              Title of the column containing trainee names
             </IonLabel>
             <IonInput
               value={residentNameFieldName}
@@ -181,9 +221,21 @@ const LocalModeLoadNew: React.FC = () => {
               }
             ></IonInput>
           </IonItem>
+          <IonText>
+            Clicking 'Save the Project File' will allow you to download a
+            project file to your local computer that has been formatted to allow
+            deidentification. Please save it somewhere accessible then click
+            'Deidentify and review my Data'
+          </IonText>
+          <br />
           <IonButton onClick={async () => saveProjectFile()}>
             {processing ? "Processing..." : "Save the project file"}
           </IonButton>
+          <br />
+          <IonButton href="./#/local/review">
+            Deidentify and Review my Data
+          </IonButton>
+          <br />
           <IonButton
             fill="outline"
             onClick={async () => {
@@ -215,15 +267,58 @@ const LocalModeLoadNew: React.FC = () => {
     } else {
       const fileHandle = (await (window as any).showOpenFilePicker())?.[0];
       const file = (await fileHandle.getFile()) as File;
-      setFile(file);
       const fileContent = await file?.text();
       try {
-        const data = JSON.parse(fileContent);
+        const data = convertNicknameDictionaryFromCSVToObject(fileContent);
         setNicknameDictionary(data);
       } catch {
         alert("The file is invalid.");
       }
     }
+  }
+
+  async function exportDefaultNicknameDictionaryFile() {
+    try {
+      const responese = await fetch("./assets/nicknames.json");
+      const dict = await responese.json();
+      const text = convertNicknameDictionaryFromObjectToCSV(dict);
+      const fileHandle = await (window as any).showSaveFilePicker({
+        types: [
+          {
+            description: "Comma-Separated Values",
+            accept: { "text/csv": [".csv"] },
+          },
+        ],
+      });
+      const writable = await fileHandle.createWritable();
+      await writable.write(text);
+      await writable.close();
+    } catch {
+      alert("Something went wrong.");
+    }
+  }
+
+  function convertNicknameDictionaryFromCSVToObject(content: string) {
+    const entries = csvParse(content);
+    const dict: { [name: string]: string[] } = {};
+    entries.forEach(({ name, nickname }) => {
+      if (name && nickname) {
+        if (!dict[name]) {
+          dict[name] = [];
+        }
+        dict[name].push(nickname);
+      }
+    });
+    return dict;
+  }
+
+  function convertNicknameDictionaryFromObjectToCSV(dict: {
+    [name: string]: string[];
+  }) {
+    const entries = Object.entries(dict).flatMap(([name, nicknames]) =>
+      nicknames.map((nickname) => ({ name, nickname }))
+    );
+    return csvFormat(entries);
   }
 
   async function loadDeidentifier() {
@@ -280,12 +375,16 @@ const LocalModeLoadNew: React.FC = () => {
               originalText: epaRecord.text,
               residentName: epaRecord.residentName,
               observerName: epaRecord.observerName,
-              tags: (await deidentify(epaRecord.text || "", names, nicknameDictionary)).map(
-                (analyzerResult: { [x: string]: any }) => ({
-                  ...analyzerResult,
-                  name: analyzerResult["label"],
-                })
-              ),
+              tags: (
+                await deidentify(
+                  epaRecord.text || "",
+                  names,
+                  nicknameDictionary
+                )
+              ).map((analyzerResult: { [x: string]: any }) => ({
+                ...analyzerResult,
+                name: analyzerResult["label"],
+              })),
             };
           })
       );
