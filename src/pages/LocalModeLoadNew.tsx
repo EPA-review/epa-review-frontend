@@ -323,7 +323,7 @@ const LocalModeLoadNew: React.FC = () => {
 
   async function loadDeidentifier() {
     pyodide = await (window as any).loadPyodide({
-      indexURL: "./pyodide/",
+      indexURL: `${window.location.origin}${window.location.pathname}/pyodide`,
     });
     const response = await fetch(
       "./deidentifier.py"

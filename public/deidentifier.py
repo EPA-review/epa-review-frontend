@@ -738,7 +738,7 @@ def Test():
                  "elizabeth":['elle', 'liz'],
                  "jason":['jay']
                 }
-    return AnonymizeText(text,names,nicknames)
+    AnonymizeText(text,names,nicknames)
 
 
 
@@ -794,5 +794,4 @@ def serializeList(myList: List[Serializable]):
 
 # comment this out when the test is not needed
 #Test(result, flag)
-# print(Test())
-AnonymizeText
+#Test()
