@@ -27,7 +27,7 @@ import {
   open,
   swapHorizontal,
 } from "ionicons/icons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SelectMenu from "../components/SelectMenu";
 import { anonymizeText } from "../utils/anonymizeText";
 import { EntityType } from "../utils/entity-type";
@@ -67,6 +67,18 @@ const LocalModeReviewDetail: React.FC = () => {
       },
     }
   );
+
+  useEffect(() => {
+    if ("launchQueue" in window) {
+      (window as any)["launchQueue"].setConsumer((launchParams: any) => {
+        if (launchParams.files?.length > 0) {
+          for (const fileHandle of launchParams.files) {
+            openFile(fileHandle);
+          }
+        }
+      });
+    }
+  }, []);
 
   return (
     <IonPage>
@@ -279,8 +291,10 @@ const LocalModeReviewDetail: React.FC = () => {
     );
   }
 
-  async function openFile() {
-    fileHandle = (await (window as any).showOpenFilePicker())?.[0];
+  async function openFile(fileHandle?: any) {
+    if (!fileHandle) {
+      fileHandle = (await (window as any).showOpenFilePicker())?.[0];
+    }
     const file = (await fileHandle.getFile()) as File;
     setFile(file);
     const fileContent = await file?.text();
