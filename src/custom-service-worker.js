@@ -1,1 +1,0 @@
-workbox.precaching.precacheAndRoute([])
