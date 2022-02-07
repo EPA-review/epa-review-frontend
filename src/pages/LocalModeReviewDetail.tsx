@@ -291,7 +291,8 @@ const LocalModeReviewDetail: React.FC = () => {
     );
   }
 
-  async function openFile(fileHandle?: any) {
+  async function openFile(existingFileHandle?: any) {
+    fileHandle = existingFileHandle;
     if (!fileHandle) {
       fileHandle = (await (window as any).showOpenFilePicker())?.[0];
     }
