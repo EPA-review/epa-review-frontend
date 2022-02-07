@@ -27,8 +27,7 @@
     {
       "action": "./#/local/review",
       "accept": {
-        "application/json": [".deid"],
-        "text/plain": [".deid"]
+        "application/vnd.epadeid+json": [".deid"]
       }
     }
   ]
