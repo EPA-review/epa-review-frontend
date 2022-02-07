@@ -47,9 +47,10 @@
   "scripts": {
     "start": "react-scripts start",
     "start.no-browser": "BROWSER=none react-scripts start",
-    "build": "react-scripts build",
+    "build": "react-scripts build && npm run build-sw",
     "test": "react-scripts test",
-    "eject": "react-scripts eject"
+    "eject": "react-scripts eject",
+    "build-sw": "node ./src/sw-build.js"
   },
   "eslintConfig": {
     "extends": [
@@ -71,7 +72,8 @@
   },
   "devDependencies": {
     "@capacitor/cli": "3.0.0",
-    "@types/d3-dsv": "^3.0.0"
+    "@types/d3-dsv": "^3.0.0",
+    "workbox-build": "^6.4.2"
   },
   "description": "An Ionic project"
 }
