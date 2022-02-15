@@ -38,9 +38,9 @@ const Dashboard: React.FC = () => {
             review, and download your deidentified data.
           </p>
         </IonText>
-        <IonButton href="./#/local/new">Format a New Dataset</IonButton>
+        <IonButton href="./#/local/new">Format and deidentify a New Dataset</IonButton>
         <IonButton href="./#/local/review">
-          Deidentify and Review my Formatted Data
+           Review my deidentified Data
         </IonButton>
       </IonContent>
     </IonPage>

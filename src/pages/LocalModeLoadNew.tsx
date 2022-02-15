@@ -229,11 +229,11 @@ const LocalModeLoadNew: React.FC = () => {
           </IonText>
           <br />
           <IonButton onClick={async () => saveProjectFile()}>
-            {processing ? "Processing..." : "Save the project file"}
+            {processing ? "Processing..." : "Deidentify and save the project file"}
           </IonButton>
           <br />
           <IonButton href="./#/local/review">
-            Deidentify and Review my Data
+            Review my Data
           </IonButton>
           <br />
           <IonButton
