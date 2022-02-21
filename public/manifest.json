@@ -25,7 +25,7 @@
   "background_color": "#ffffff",
   "file_handlers": [
     {
-      "action": "review",
+      "action": "/review",
       "accept": {
         "application/vnd.epadeid+json": [".deid"]
       }
