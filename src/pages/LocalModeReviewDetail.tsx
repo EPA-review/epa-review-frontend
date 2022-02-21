@@ -139,6 +139,7 @@ const LocalModeReviewDetail: React.FC = () => {
               deidentified narrative data.
             </IonText>
             {renderMainView()}
+            <div style={{ height: "5rem" }} />
             {renderPageControl()}
             {renderCheckAllButton()}
           </>

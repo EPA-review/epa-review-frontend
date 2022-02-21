@@ -366,6 +366,7 @@ const Dashboard: React.FC = () => {
                 })
             : "Loading data..."}
         </IonGrid>
+        <div style={{ height: "5rem" }} />
         <IonFab
           className={styles["page-switch-fab-container"]}
           vertical="bottom"
