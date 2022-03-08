@@ -34,6 +34,7 @@ import UserMenu from "../components/UserMenu";
 import { anonymizeText } from "../utils/anonymizeText";
 import { EntityType } from "../utils/entity-type";
 import ServerInfo from "../utils/ServerInfo";
+import * as xlsx from "xlsx";
 
 import styles from "./ReviewDetail.module.css";
 
@@ -135,6 +136,13 @@ const Dashboard: React.FC = () => {
             <IonButton
               title="Export CSV"
               onClick={() => exportCSV(groupTag, userId)}
+            >
+              <IonIcon slot="icon-only" icon={download}></IonIcon>
+            </IonButton>
+            <IonButton
+              title="Export XLSX"
+              color="success"
+              onClick={() => exportXLSX(groupTag, userId)}
             >
               <IonIcon slot="icon-only" icon={download}></IonIcon>
             </IonButton>
@@ -517,6 +525,39 @@ async function exportCSV(groupTag: string, userId: string) {
   element.click();
 
   element.remove();
+}
+
+async function exportXLSX(groupTag: string, userId: string) {
+  const currentData = await fetchData(groupTag);
+
+  const dataCount = currentData?.length || 0;
+  const reviewedDataCount =
+    currentData?.filter((datum) => datum.userTags?.[userId]).length || 0;
+  if (dataCount > reviewedDataCount) {
+    if (
+      !window.confirm(
+        `You have not yet checked all records (${reviewedDataCount} of ${dataCount} checked), are you sure you are ready to export?`
+      )
+    ) {
+      return;
+    }
+  }
+  const exportContent = currentData?.map((datum, i) => ({
+    index: i + 1,
+    originalText: datum.originalText,
+    auto: anonymizeText(datum.originalText, datum.tags),
+    user: anonymizeText(datum.originalText, datum.userTags?.[userId]),
+    ...generateConfusionMatrix(
+      datum.originalText,
+      datum.tags,
+      datum.userTags?.[userId]
+    ),
+  }));
+
+  const workbook = xlsx.utils.book_new();
+  workbook.SheetNames.push("default");
+  workbook.Sheets["default"] = xlsx.utils.json_to_sheet(exportContent || []);
+  xlsx.writeFileXLSX(workbook, `${new Date().toISOString()}.xlsx`);
 }
 
 function generateConfusionMatrix(text: string, tags: Tag[], userTags: Tag[]) {

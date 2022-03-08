@@ -32,6 +32,7 @@ import SelectMenu from "../components/SelectMenu";
 import { anonymizeText } from "../utils/anonymizeText";
 import { EntityType } from "../utils/entity-type";
 import { EpaRecordForView, Tag } from "../utils/epa-record";
+import * as xlsx from "xlsx";
 
 import styles from "./LocalModeReviewDetail.module.css";
 
@@ -92,6 +93,13 @@ const LocalModeReviewDetail: React.FC = () => {
             <IonButton
               title="Export CSV"
               onClick={() => exportCSV("export", userId)}
+            >
+              <IonIcon slot="icon-only" icon={download}></IonIcon>
+            </IonButton>
+            <IonButton
+              title="Export XLSX"
+              color="success"
+              onClick={() => exportXLSX("export", userId)}
             >
               <IonIcon slot="icon-only" icon={download}></IonIcon>
             </IonButton>
@@ -472,6 +480,60 @@ const LocalModeReviewDetail: React.FC = () => {
     });
     const writable = await fileHandle.createWritable();
     await writable.write(csv);
+    await writable.close();
+  }
+
+  async function exportXLSX(datasetName: string, userId: string) {
+    const currentData = data;
+
+    const dataCount = currentData?.length || 0;
+    const reviewedDataCount =
+      currentData?.filter((epaRecord) => epaRecord.userTags?.[userId]).length ||
+      0;
+    if (dataCount > reviewedDataCount) {
+      if (
+        !window.confirm(
+          `You have not yet checked all records (${reviewedDataCount} of ${dataCount} checked), are you sure you are ready to export?`
+        )
+      ) {
+        return;
+      }
+    }
+    const exportContent = currentData?.map((epaRecord, i) => ({
+      index: i + 1,
+      originalText: epaRecord.originalText,
+      auto: anonymizeText(epaRecord.originalText || "", epaRecord.tags || []),
+      user: anonymizeText(
+        epaRecord.originalText || "",
+        epaRecord.userTags?.[userId] || []
+      ),
+      ...(epaRecord.userTags?.[userId]
+        ? generateConfusionMatrix(
+            epaRecord.originalText || "",
+            epaRecord.tags || [],
+            epaRecord.userTags?.[userId] || []
+          )
+        : {}),
+    }));
+    const workbook = xlsx.utils.book_new();
+    workbook.SheetNames.push("default");
+    workbook.Sheets["default"] = xlsx.utils.json_to_sheet(exportContent || []);
+    const workbookBuffer = xlsx.write(workbook, {
+      bookType: "xlsx",
+      type: "buffer",
+    });
+
+    const fileHandle = await (window as any).showSaveFilePicker({
+      suggestedName: `${datasetName}-${new Date().toISOString()}`,
+      types: [
+        {
+          description: "Comma-Separated Values File",
+          accept: { "application/octet-stream": [".xlsx"] },
+        },
+      ],
+    });
+    const writable = await fileHandle.createWritable();
+    await writable.write(workbookBuffer);
     await writable.close();
   }
 
