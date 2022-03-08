@@ -11,13 +11,13 @@ import {
   IonInput,
   IonItem,
   IonLabel,
-  IonList,
   IonLoading,
   IonPage,
   IonSelect,
   IonSelectOption,
   IonText,
   IonTitle,
+  IonToggle,
   IonToolbar,
   useIonPopover,
 } from "@ionic/react";
@@ -49,6 +49,7 @@ const Upload: React.FC = () => {
   const [hasFinished, setHasFinished] = useState(false);
   const [users, setUsers] = useState<User[]>();
   const [allowedUserIds, setAllowedUserIds] = useState<User[]>();
+  const [shouldShowVideo, setShouldShowVideo] = useState(false);
 
   const [presentMainMenuPopover, dismissMainMenuPopover] = useIonPopover(
     MainMenu,
@@ -106,6 +107,29 @@ const Upload: React.FC = () => {
           onDidDismiss={() => setShowLoading(false)}
           message={"Uploading..."}
         />
+        <IonCard>
+          <IonCardContent>
+            <IonItem>
+              <IonToggle
+                checked={shouldShowVideo}
+                onIonChange={({ detail }) => setShouldShowVideo(detail.checked)}
+              />
+              <IonLabel>Show Video</IonLabel>
+            </IonItem>
+            <br />
+            {shouldShowVideo && (
+              <iframe
+                width="560"
+                height="315"
+                src="https://www.youtube.com/embed/o2m2sqdVIlk"
+                title="YouTube video player"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></iframe>
+            )}
+          </IonCardContent>
+        </IonCard>
         {renderUploadFileCard()}
         {renderColumnSelectionCard()}
         {renderSettingDatasetNameCard()}

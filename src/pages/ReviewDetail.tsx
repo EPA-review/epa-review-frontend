@@ -12,10 +12,13 @@ import {
   IonHeader,
   IonIcon,
   IonInput,
+  IonItem,
+  IonLabel,
   IonPage,
   IonRow,
   IonText,
   IonTitle,
+  IonToggle,
   IonToolbar,
   useIonPopover,
 } from "@ionic/react";
@@ -90,6 +93,7 @@ const Dashboard: React.FC = () => {
   const { groupTag } = useParams<{ groupTag: string }>();
   const [data, setData] = useState<EpaFeedback[]>();
   const [page, setPage] = useState(1);
+  const [shouldShowVideo, setShouldShowVideo] = useState(false);
   const [, forceUpdate] = useState({});
   const [presentUserMenuPopover, dismissUserMenuPopover] = useIonPopover(
     UserMenu,
@@ -158,22 +162,47 @@ const Dashboard: React.FC = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent>
-        <IonText>
-          Below you should see your narrative data with trainee names and
-          pronouns highlighted for review. If you identify an error, select the
-          yellow button to the right of the narrative to modify the
-          deidentification of that narrative. You will then be able to click the
-          word that was correctly or incorrectly identified as a name, nickname,
-          or pronoun. Clicking on it will allow you to add or remove the label.
-          When it has been edited to correct the error (or if it did not have
-          any errors), click the green checkmark to the right of the narrative
-          to identify that it has been completely deidentified. If you would
-          like to toggle between the original tags and those that you have
-          modified, you can do so by clicking the blue button. When you have
-          completed your review and modification to the deidentification, select
-          the 'download' button in the top right hand corner to download a CSV
-          containing your deidentified narrative data.
-        </IonText>
+        <IonCard>
+          <IonCardContent>
+            <IonText>
+              Below you should see your narrative data with trainee names and
+              pronouns highlighted for review. If you identify an error, select
+              the yellow button to the right of the narrative to modify the
+              deidentification of that narrative. You will then be able to click
+              the word that was correctly or incorrectly identified as a name,
+              nickname, or pronoun. Clicking on it will allow you to add or
+              remove the label. When it has been edited to correct the error (or
+              if it did not have any errors), click the green checkmark to the
+              right of the narrative to identify that it has been completely
+              deidentified. If you would like to toggle between the original
+              tags and those that you have modified, you can do so by clicking
+              the blue button. When you have completed your review and
+              modification to the deidentification, select the 'download' button
+              in the top right hand corner to download a CSV containing your
+              deidentified narrative data.
+            </IonText>
+            <br />
+            <IonItem>
+              <IonToggle
+                checked={shouldShowVideo}
+                onIonChange={({ detail }) => setShouldShowVideo(detail.checked)}
+              />
+              <IonLabel>Show Video</IonLabel>
+            </IonItem>
+            <br />
+            {shouldShowVideo && (
+              <iframe
+                width="560"
+                height="315"
+                src="https://www.youtube.com/embed/o2m2sqdVIlk"
+                title="YouTube video player"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></iframe>
+            )}
+          </IonCardContent>
+        </IonCard>
         <IonGrid>
           {data
             ? data

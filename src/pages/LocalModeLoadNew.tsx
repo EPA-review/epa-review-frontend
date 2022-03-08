@@ -14,6 +14,7 @@ import {
   IonPage,
   IonText,
   IonTitle,
+  IonToggle,
   IonToolbar,
 } from "@ionic/react";
 import { csvFormat, csvParse, DSVRowArray } from "d3-dsv";
@@ -33,6 +34,7 @@ const LocalModeLoadNew: React.FC = () => {
   const [observerNameFieldName, setObserverNameFieldName] =
     useState("Observer Name");
   const [processing, setProcessing] = useState(false);
+  const [shouldShowVideo, setShouldShowVideo] = useState(false);
 
   useEffect(() => {
     loadDeidentifier();
@@ -49,6 +51,29 @@ const LocalModeLoadNew: React.FC = () => {
         </IonToolbar>
       </IonHeader>
       <IonContent>
+        <IonCard>
+          <IonCardContent>
+            <IonItem>
+              <IonToggle
+                checked={shouldShowVideo}
+                onIonChange={({ detail }) => setShouldShowVideo(detail.checked)}
+              />
+              <IonLabel>Show Video</IonLabel>
+            </IonItem>
+            <br />
+            {shouldShowVideo && (
+              <iframe
+                width="560"
+                height="315"
+                src="https://www.youtube.com/embed/o2m2sqdVIlk"
+                title="YouTube video player"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></iframe>
+            )}
+          </IonCardContent>
+        </IonCard>
         {renderLoadDatasetCard()}
         {renderLoadNicknamesCard()}
         {renderColumnSelectionCard()}
@@ -229,12 +254,12 @@ const LocalModeLoadNew: React.FC = () => {
           </IonText>
           <br />
           <IonButton onClick={async () => saveProjectFile()}>
-            {processing ? "Processing..." : "Deidentify and save the project file"}
+            {processing
+              ? "Processing..."
+              : "Deidentify and save the project file"}
           </IonButton>
           <br />
-          <IonButton href="./#/local/review">
-            Review my Data
-          </IonButton>
+          <IonButton href="./#/local/review">Review my Data</IonButton>
           <br />
           <IonButton
             fill="outline"
