@@ -29,24 +29,21 @@ const Dashboard: React.FC = () => {
           <IonCardContent>
             <IonText>
               <p>
-                Local mode allows you to anonymize your narrative EPA assessment
-                data without your data leaving your computer.{" "}
+                Local mode allows you to deidentify and review narrative EPA
+                assessment data without the data leaving your computer.{" "}
                 <b>
-                  We will not upload or store any of the information that you
-                  manipulate using this tool on Local Mode.
+                  When using local mode, all actions will be done on your
+                  computer and no data will be uploaded or stored.
                 </b>{" "}
                 Instead, all actions will be done on your local computer.
               </p>
               <p>
-                To use Local Mode you will first need to format a CSV
-                spreadsheet file containing your EPA assessment data. Data in
-                the excel file you format should contain at least three columns
-                that contain the name of the trainee, name of the observer, and
-                the narrative assessment data. To format your data, click the
-                button 'Format a new dataset' and follow the instructions. Once
-                you have formatted your data, click 'Deidentify and Review my
-                Formatted Data' to deidentify, review, and download your
-                deidentified data.
+                To use Local Mode you will need a spreadsheet saved as a CSV
+                file containing at least three columns: the name of the trainee,
+                the name of the observer, and the narrative assessment data. To
+                get started, click 'Format and deidentify a new dataset' and
+                follow the instructions. The results can then be reviewed or
+                downloaded by clicking 'Review my deidentified data'.
               </p>
             </IonText>
             <br />

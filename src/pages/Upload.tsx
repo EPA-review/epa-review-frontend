@@ -109,6 +109,14 @@ const Upload: React.FC = () => {
         />
         <IonCard>
           <IonCardContent>
+            <ion-text>
+              To use our EPA deidentification tool you will need a spreadsheet
+              saved as a CSV file containing at least three columns: the name of
+              the trainee, the name of the observer, and the narrative
+              assessment data. To get started, follow these directions to upload
+              your data. It will then be available for your review under the
+              'Review' tab.
+            </ion-text>
             <IonItem>
               <IonToggle
                 checked={shouldShowVideo}
@@ -272,7 +280,7 @@ const Upload: React.FC = () => {
                 !!(file && data && isDataLookingGood && isGroupTagLookingGood)
               }
               value={groupTag}
-              placeholder="Input your group tag here..."
+              placeholder="Input your dataset name here..."
               onIonChange={({ detail }) => setGroupTag(detail.value || "")}
             ></IonInput>
           </IonItem>

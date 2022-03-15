@@ -141,14 +141,16 @@ const Dashboard: React.FC = () => {
               title="Export CSV"
               onClick={() => exportCSV(groupTag, userId)}
             >
-              <IonIcon slot="icon-only" icon={download}></IonIcon>
+              <IonIcon icon={download}></IonIcon>
+              Export CSV
             </IonButton>
             <IonButton
               title="Export XLSX"
               color="success"
               onClick={() => exportXLSX(groupTag, userId)}
             >
-              <IonIcon slot="icon-only" icon={download}></IonIcon>
+              <IonIcon icon={download}></IonIcon>
+              Export XLSX
             </IonButton>
             <IonButton
               title="User"
@@ -156,7 +158,8 @@ const Dashboard: React.FC = () => {
                 presentUserMenuPopover({ event: event.nativeEvent })
               }
             >
-              <IonIcon slot="icon-only" icon={person}></IonIcon>
+              <IonIcon icon={person}></IonIcon>
+              User
             </IonButton>
           </IonButtons>
         </IonToolbar>

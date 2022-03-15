@@ -47,7 +47,7 @@ const LocalModeLoadNew: React.FC = () => {
           <IonButtons slot="start">
             <IonBackButton defaultHref="." />
           </IonButtons>
-          <IonTitle>Load New Dataset (Local Mode)</IonTitle>
+          <IonTitle>Format and deidentify a new dataset (Local Mode)</IonTitle>
         </IonToolbar>
       </IonHeader>
       <IonContent>
@@ -114,25 +114,25 @@ const LocalModeLoadNew: React.FC = () => {
     return (
       <IonCard disabled={!(file && data) || nicknameDictionary}>
         <IonCardHeader>
-          <IonCardTitle>Load your nickname dictionary file.</IonCardTitle>
+          <IonCardTitle>Load your name dictionary.</IonCardTitle>
           <IonText>
             <p>
-              A dictionary of nicknames that is customized for your own dataset
-              can be used instead of our default nickname dictionary. The
-              nickname dictionary is used to ensure that commonly used nicknames
-              (e.g. a trainee named 'Samantha' that is sometimes referred to as
-              'Sam') appearing in your data are deidentified correctly.
+              We use a name dictionary to support the deidentification of named
+              individuals. We recommend that you start by selecting 'Use the
+              default name dictionary'. However, if you find that our tool
+              misses names or nicknames in your data, you can download, modify,
+              and select a name dictionary specific to your dataset below.
             </p>
             <p>
-              - Click 'Use the Default Nickname Dictionary' to use our
-              pre-existing nickname dictionary.
+              - Click 'Use the Default Name Dictionary' to use our pre-existing
+              name dictionary.
             </p>
             <p>
-              - Click 'Download the Default Nickname Dictionary' to review and
-              add names as needed.{" "}
+              - Click 'Download the Default Name Dictionary' to review and add
+              names as needed.{" "}
             </p>
             <p>
-              - Click 'Select a Nickname Dictionary File' to select a nickname
+              - Click 'Select a Name Dictionary File' to select a name
               dictionary file from your own computer.
             </p>
             <p>
@@ -143,11 +143,11 @@ const LocalModeLoadNew: React.FC = () => {
         </IonCardHeader>
         <IonCardContent>
           <IonButton onClick={() => loadNicknameDictionaryFile()}>
-            Select a Nickname Dictionary File
+            Select a Name Dictionary File
           </IonButton>
           <br />
           <IonButton onClick={() => loadNicknameDictionaryFile(true)}>
-            Use the Default Nickname Dictionary
+            Use the Default Name Dictionary
           </IonButton>
           <IonButton
             fill="outline"

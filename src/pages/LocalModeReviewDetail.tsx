@@ -98,17 +98,20 @@ const LocalModeReviewDetail: React.FC = () => {
               title="Export CSV"
               onClick={() => exportCSV("export", userId)}
             >
-              <IonIcon slot="icon-only" icon={download}></IonIcon>
+              <IonIcon icon={download}></IonIcon>
+              Export CSV
             </IonButton>
             <IonButton
               title="Export XLSX"
               color="success"
               onClick={() => exportXLSX("export", userId)}
             >
-              <IonIcon slot="icon-only" icon={download}></IonIcon>
+              <IonIcon icon={download}></IonIcon>
+              Export XLSX
             </IonButton>
             <IonButton title="Open" onClick={() => openFile()}>
-              <IonIcon slot="icon-only" icon={open}></IonIcon>
+              <IonIcon icon={open}></IonIcon>
+              Open
             </IonButton>
           </IonButtons>
         </IonToolbar>
