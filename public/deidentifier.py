@@ -26,6 +26,7 @@ class TextSegment(Serializable):
 # Nicknames are not passed into the call to AnonymizeText
 #_nicknames = ['rick', 'ricky', 'richie', 'dick', 'stu', 'elle', 'liz', 'jay', 'kat', 'cat']
 _ignore = ['you', 'male', 'female', 'epa', 'e.g.', 'eg', 'i.e.', 'ie']
+_overrides = ['who', 'that', 'to', 'then', 'than']
 _acronyms = ['epa','stemi']
 _badSymbols = ['/', '\\', '#', '$', ':']
 
@@ -186,9 +187,10 @@ Function:
 def AnonymizeWord_Abbreviations(W):
     _result = W
 
-    if ((W == "m") or
-        (W == "f")):
-        _result = "FLAGGED"
+#DISABLED BY POPULAR DEMAND
+#    if ((W == "m") or
+#        (W == "f")):
+#        _result = "FLAGGED"
 
     return _result
 
@@ -364,10 +366,22 @@ def AnonymizeWord_NameSubword(W, P, N, Name, FName):
     return _result
 
 
+def AnonymizeWord_FlagOverrides(W):
+    _result = True
+    _index = 0
+
+    while (_index < len(_overrides)) and _result:
+        if (W.lower() == _overrides[_index].lower()):
+            _result = False
+        _index = _index + 1
+
+    return _result
+
+
 def AnonymizeWord_Flag(W, F):
     _result = W
 
-    if F:
+    if F and AnonymizeWord_FlagOverrides(W):
         _result = "NAME"
 
     return _result
@@ -547,7 +561,7 @@ def AnonymizeWord(W, P, N, Names, Nicknames, F):
             if _result == _original or _contractionFlag:
                 for name in Names:
                     _name = name.lower();
-                    if _result == _original:
+                    if _result == _original and (not _contractionFlag):
                         _result = AnonymizeWord_Name(_result, _name)
                         # print(result)
 
@@ -561,9 +575,17 @@ def AnonymizeWord(W, P, N, Names, Nicknames, F):
                         _result = AnonymizeWord_Initials(_result, _next, _name, Names[0].lower())
                         # print(result)
 
-                    if _result == _original:
-                        _result = AnonymizeWord_NickName(_result, _name, Nicknames)
+                    if _result == _original or _contractionFlag:
+                        if (not _contractionFlag):
+                            _result = AnonymizeWord_NickName(_result, _name, Nicknames)
+
+                        if (_contractionFlag):
+                            _temp = _original[:len(_original)-1]
+                            if AnonymizeWord_NickName(_temp, _name, Nicknames) == "NICKNAME":
+                                _result = "NICKNAME"
+                                _contractionFlag = False
                         # print(result)
+
 
             """                    if _result == _original:
                                     _result = AnonymizeWord_NameSubword(_result, _previous, _next, _name, Names[0].lower())
@@ -730,8 +752,8 @@ flag = False
 """
 def Test():
     text = 'I\' m a fool of a took. Dr.  Wilson\'s. Dr P Wilson, . Jay as discussed Dr. A Henderson think you need to work on strategies to help you ensure that you are completing full reassessments including being aware of what results or tests that you have ordered are still outstanding. You also would improve by being more mindful of timing to reassess patients. Your patient care was very EB and you are quite good at accessing relevant guidelines and critically thinking your way through them as they would apply to your particular patient. wasn\'t'
-    text = 'Excellent management of a chest pain that was going to be placed in the waiting room.  Dr Benjamin recognized the STEMI in a timely manner, began appropriate treatment and had to advocate for STAT transfer to university hospital due to a significant back log of transfers.'
-    names = ['Jason','Wilson','Joanna','Smith']
+    text = 'Rick\'s doctor that Excellent management of a chest pain that was going to be placed in the waiting room.  Dr Benjamin recognized the STEMI in a timely manner, began appropriate treatment and had to advocate for STAT transfer to university hospital due to a significant back log of transfers.'
+    names = ['Richard','Wilson','Joanna','Smith']
     nicknames = {"richard":['rick','ricky','richie','dick'],
                  "stewart":['stu'],
                  "samuel":['sam','sammy'],
