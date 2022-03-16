@@ -150,7 +150,7 @@ const LocalModeReviewDetail: React.FC = () => {
                 <iframe
                   width="560"
                   height="315"
-                  src="https://www.youtube.com/embed/o2m2sqdVIlk"
+                  src="https://www.youtube.com/embed/7r0H__HyHBk?start=158"
                   title="YouTube video player"
                   frameBorder="0"
                   allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
