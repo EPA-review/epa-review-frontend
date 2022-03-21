@@ -34,6 +34,7 @@ import LocalModeLoadNew from "./pages/LocalModeLoadNew";
 import LocalMode from "./pages/LocalMode";
 import LocalModeReviewDetail from "./pages/LocalModeReviewDetail";
 import NewLoadDataset from "./pages/NewLoadDataset";
+import NewReview from "./pages/NewReview";
 
 const App: React.FC = () => {
   const theme = getActualTheme();
@@ -97,6 +98,9 @@ const App: React.FC = () => {
           </Route>
           <Route exact path="/new/load">
             <NewLoadDataset />
+          </Route>
+          <Route exact path="/new/review">
+            <NewReview />
           </Route>
         </IonRouterOutlet>
       );
