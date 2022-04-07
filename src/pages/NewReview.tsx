@@ -5,9 +5,12 @@ import {
   IonCardContent,
   IonCol,
   IonContent,
+  IonFab,
+  IonFabButton,
   IonGrid,
   IonHeader,
   IonIcon,
+  IonInput,
   IonItem,
   IonLabel,
   IonPage,
@@ -46,35 +49,67 @@ const Dashboard: React.FC = () => {
       </IonHeader>
       <IonContent>
         {renderTips()}
-        <IonGrid>
-          {results
-            ?.slice(itemCountPerPage * (page - 1), itemCountPerPage * page)
-            ?.map(({ feedbacks }, i) => (
-              <IonRow key={i}>
-                <IonCol size="auto">
-                  <IonCard>
-                    <IonCardContent>{i}</IonCardContent>
-                  </IonCard>
-                </IonCol>
-                <IonCol>
-                  <IonRow>
-                    {feedbacks?.map((feedback, i) => (
-                      <IonCol key={i}>
-                        <IonCard>
-                          <IonCardContent>
-                            {feedback.originalText}
-                          </IonCardContent>
-                        </IonCard>
-                      </IonCol>
-                    ))}
-                  </IonRow>
-                </IonCol>
-              </IonRow>
-            ))}
-        </IonGrid>
+        {renderItems()}
+        <IonFab
+          vertical="bottom"
+          horizontal="center"
+          slot="fixed"
+          style={{ transform: "translateX(-50%)" }}
+        >
+          <IonFabButton
+            disabled={page <= 1}
+            style={{ display: "inline-block" }}
+            onClick={() => setPage(+page - 1)}
+          >
+            {"<"}
+          </IonFabButton>
+          <IonFabButton color="medium" style={{ display: "inline-block" }}>
+            <IonInput
+              type="number"
+              value={page}
+              onIonBlur={({ detail }) => setPage(+(detail.target as any).value)}
+            />
+          </IonFabButton>
+          <IonFabButton
+            disabled={page >= (results?.length || 0) / itemCountPerPage}
+            style={{ display: "inline-block" }}
+            onClick={() => setPage(+page + 1)}
+          >
+            {">"}
+          </IonFabButton>
+        </IonFab>
       </IonContent>
     </IonPage>
   );
+
+  function renderItems() {
+    return (
+      <IonGrid>
+        {results
+          ?.slice(itemCountPerPage * (page - 1), itemCountPerPage * page)
+          ?.map(({ feedbacks }, i) => (
+            <IonRow key={i}>
+              <IonCol size="auto">
+                <IonCard>
+                  <IonCardContent>{i}</IonCardContent>
+                </IonCard>
+              </IonCol>
+              <IonCol>
+                <IonRow>
+                  {feedbacks?.map((feedback, i) => (
+                    <IonCol key={i}>
+                      <IonCard>
+                        <IonCardContent>{feedback.originalText}</IonCardContent>
+                      </IonCard>
+                    </IonCol>
+                  ))}
+                </IonRow>
+              </IonCol>
+            </IonRow>
+          ))}
+      </IonGrid>
+    );
+  }
 
   function renderTips() {
     switch (true) {
