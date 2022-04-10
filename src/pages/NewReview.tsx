@@ -19,13 +19,20 @@ import {
   IonTitle,
   IonToggle,
   IonToolbar,
+  useIonPopover,
 } from "@ionic/react";
-import { open } from "ionicons/icons";
+import { checkmark, create, open, swapHorizontal } from "ionicons/icons";
 import { useState } from "react";
+import SelectMenu from "../components/SelectMenu";
+import { EntityType } from "../utils/entity-type";
+import { Feedback, Results, Tag } from "../utils/new-data-structure";
 
 const itemCountPerPage = 10;
+const userId = "";
 
 let fileHandle: any;
+let selectPopoverValue = "";
+let entityChangeHandler: (tagName: string) => void = () => {};
 
 const Dashboard: React.FC = () => {
   const [file, setFile] = useState<any>();
@@ -33,7 +40,23 @@ const Dashboard: React.FC = () => {
   const [page, setPage] = useState(1);
   const [shouldShowVideo, setShouldShowVideo] = useState(false);
 
-  const results: { feedbacks: any[] }[] = data?.results;
+  const [, forceUpdateHelper] = useState({});
+  const forceUpdate = () => forceUpdateHelper({});
+
+  const [presentSelectPopover, dismissSelectPopover] = useIonPopover(
+    SelectMenu,
+    {
+      title: "Select a entity",
+      options: ["None", ...Object.values(EntityType)],
+      getValue: () => selectPopoverValue,
+      valueChangeHandler: (tagName: string) => {
+        entityChangeHandler(tagName);
+        dismissSelectPopover();
+      },
+    }
+  );
+
+  const results: Results = data?.results;
 
   return (
     <IonPage>
@@ -71,7 +94,9 @@ const Dashboard: React.FC = () => {
             />
           </IonFabButton>
           <IonFabButton
-            disabled={page >= (results?.length || 0) / itemCountPerPage}
+            disabled={
+              page >= (results?.feedbackGroups?.length || 0) / itemCountPerPage
+            }
             style={{ display: "inline-block" }}
             onClick={() => setPage(+page + 1)}
           >
@@ -85,25 +110,113 @@ const Dashboard: React.FC = () => {
   function renderItems() {
     return (
       <IonGrid>
-        {results
+        {results?.feedbackGroups
           ?.slice(itemCountPerPage * (page - 1), itemCountPerPage * page)
-          ?.map(({ feedbacks }, i) => (
+          ?.map((feedbackGroup, i) => (
             <IonRow key={i}>
               <IonCol size="auto">
                 <IonCard>
-                  <IonCardContent>{i}</IonCardContent>
+                  <IonCardContent>
+                    <IonText
+                      color={
+                        feedbackGroup.feedbacks.every(
+                          ({ userTagsDict, editing }) =>
+                            userTagsDict?.[userId] && !editing
+                        )
+                          ? "success"
+                          : ""
+                      }
+                    >
+                      {i}
+                    </IonText>
+                  </IonCardContent>
                 </IonCard>
               </IonCol>
               <IonCol>
-                <IonRow>
-                  {feedbacks?.map((feedback, i) => (
-                    <IonCol key={i}>
-                      <IonCard>
-                        <IonCardContent>{feedback.originalText}</IonCardContent>
-                      </IonCard>
-                    </IonCol>
-                  ))}
-                </IonRow>
+                {feedbackGroup?.feedbacks?.map((feedback, i) => {
+                  if (feedback.showingModifiedTags === undefined) {
+                    feedback.showingModifiedTags = true;
+                  }
+                  return (
+                    <IonRow key={i}>
+                      <IonCol>
+                        <IonCard>
+                          <IonCardContent>
+                            <s-magic-text
+                              ref={(el: HTMLSMagicTextElement) => {
+                                if (el) {
+                                  configMagicText(el, feedback);
+                                }
+                              }}
+                            />
+                          </IonCardContent>
+                        </IonCard>
+                      </IonCol>
+                      <IonCol size="auto">
+                        <IonCard style={{ width: "auto" }}>
+                          <IonButton
+                            color="primary"
+                            fill={
+                              feedback?.showingModifiedTags ? "solid" : "clear"
+                            }
+                            title="Toggle auto/user labels"
+                            onClick={() => {
+                              feedback.showingModifiedTags =
+                                !feedback?.showingModifiedTags;
+                              feedback.editing = false;
+                              forceUpdate();
+                            }}
+                          >
+                            <IonIcon
+                              slot="icon-only"
+                              icon={swapHorizontal}
+                            ></IonIcon>
+                          </IonButton>
+                          <IonButton
+                            color="warning"
+                            fill={feedback.editing ? "solid" : "clear"}
+                            title="Edit"
+                            onClick={() => {
+                              feedback.editing = !feedback?.editing;
+                              if (
+                                feedback.editing &&
+                                feedback?.userTagsDict?.[userId]
+                              ) {
+                                feedback.currentUserTagsBackup = [
+                                  ...feedback?.userTagsDict[userId],
+                                ];
+                              } else {
+                                if (feedback?.userTagsDict) {
+                                  feedback.userTagsDict[userId] =
+                                    feedback.currentUserTagsBackup;
+                                }
+                              }
+                              forceUpdate();
+                            }}
+                          >
+                            <IonIcon slot="icon-only" icon={create}></IonIcon>
+                          </IonButton>
+                          <IonButton
+                            color="success"
+                            fill={
+                              feedback?.userTagsDict?.[userId] &&
+                              !feedback.editing
+                                ? "solid"
+                                : "clear"
+                            }
+                            title="Submit"
+                            onClick={() => submit(feedback)}
+                          >
+                            <IonIcon
+                              slot="icon-only"
+                              icon={checkmark}
+                            ></IonIcon>
+                          </IonButton>
+                        </IonCard>
+                      </IonCol>
+                    </IonRow>
+                  );
+                })}
               </IonCol>
             </IonRow>
           ))}
@@ -200,6 +313,116 @@ const Dashboard: React.FC = () => {
     } catch {
       setData(undefined);
     }
+  }
+
+  function configMagicText(element: HTMLSMagicTextElement, feedback: Feedback) {
+    const { originalText, tags, userTagsDict, showingModifiedTags } = feedback;
+    element.text = originalText;
+    element.tags = (
+      (showingModifiedTags ? userTagsDict?.[userId] || tags : tags) || []
+    )?.map((tag: any) => ({
+      ...tag,
+      name: "...",
+      style: {
+        color: "var(--color)",
+        background: tag.edited ? "bisque" : "lightblue",
+        borderRadius: "5px",
+        padding: ".25em",
+      },
+      labelStyle: {
+        background: "",
+        color: "var(--color)",
+        marginLeft: ".5em",
+        fontWeight: "bold",
+      },
+    }));
+    const clickHandler = (event: CustomEvent) => {
+      const detail = event.detail;
+      initializeUserTagsDict(feedback, userId, tags || []);
+      const currentUserTags = feedback.userTagsDict?.[userId];
+      const tag = currentUserTags?.find(
+        (tag) => tag.start === detail.start && tag.end === detail.end
+      );
+      selectPopoverValue = tag?.label || "";
+      entityChangeHandler = (tagName: string) => {
+        if (tagName === "None") {
+          if (feedback.userTagsDict) {
+            feedback.userTagsDict[userId] = feedback.userTagsDict[
+              userId
+            ]?.filter((filteringTag) => filteringTag !== tag);
+          }
+        } else {
+          if (tag) {
+            tag.label = tagName;
+            tag.edited = true;
+          } else {
+            currentUserTags?.push({
+              start: detail.start,
+              end: detail.end,
+              label: tagName,
+              edited: true,
+            });
+          }
+        }
+        dismissSelectPopover();
+        forceUpdate();
+      };
+      presentSelectPopover();
+    };
+
+    if (feedback.editing) {
+      element.segmentHoverStyle = { background: "orange" };
+      element.removeEventListener("segmentClick", feedback.clickHandler as any);
+      element.addEventListener("segmentClick", clickHandler as any);
+      feedback.clickHandler = clickHandler;
+    } else {
+      element.segmentHoverStyle = {};
+      element.removeEventListener("segmentClick", feedback.clickHandler as any);
+    }
+  }
+
+  async function submit(feedback: Feedback) {
+    feedback.editing = false;
+    initializeUserTagsDict(feedback, userId, feedback.tags || []);
+    const writable = await fileHandle.createWritable();
+    await writable.write(JSON.stringify(obtainCleanedData()));
+    await writable.close();
+    forceUpdate();
+  }
+
+  function initializeUserTagsDict(
+    feedback: Feedback,
+    userId: string,
+    tags: Tag[]
+  ) {
+    if (!feedback.userTagsDict) {
+      feedback.userTagsDict = {};
+    }
+    if (!feedback?.userTagsDict[userId]) {
+      feedback.userTagsDict[userId] = tags.map((tag) => ({
+        ...tag,
+        edited: false,
+      }));
+    }
+  }
+
+  function obtainCleanedData() {
+    return {
+      ...data,
+      results: {
+        ...results,
+        feedbackGroups: results?.feedbackGroups?.map((feedbackGroup) => ({
+          feedbacks: feedbackGroup?.feedbacks?.map(
+            (feedback) =>
+              ({
+                originalText: feedback.originalText,
+                tags: feedback.tags,
+                userTagsDict: feedback.userTagsDict,
+              } as Feedback)
+          ),
+        })),
+      },
+    };
   }
 };
 
