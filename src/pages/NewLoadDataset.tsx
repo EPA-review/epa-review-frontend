@@ -20,6 +20,7 @@ import {
 import { csvFormat, csvParse, DSVRowArray } from "d3-dsv";
 import { person } from "ionicons/icons";
 import { useEffect, useState } from "react";
+import { FeedbackGroup, Results, Tag } from "../utils/new-data-structure";
 
 let pyodide: any;
 let pythonDeidentifier: any;
@@ -425,24 +426,26 @@ const Dashboard: React.FC = () => {
           (columName) => record[columName]?.match(/\w+/g) || []
         ) || [],
     }));
-    const results = await Promise.all(
-      (records || []).map(async (record, i) => {
-        const names = record.residentNames.concat(record.observerNames);
-        return {
-          feedbacks: await Promise.all(
-            record.feedbackTexts.map(async (feedback) => ({
-              originalText: feedback,
-              tags: (
-                await deidentify(feedback || "", names, nameDictionary)
-              ).map((analyzerResult: { [x: string]: any }) => ({
-                ...analyzerResult,
-                name: analyzerResult["label"],
-              })),
-            }))
-          ),
-        };
-      })
-    );
+    const results: Results = {
+      feedbackGroups: (await Promise.all(
+        (records || []).map(async (record, i) => {
+          const names = record.residentNames.concat(record.observerNames);
+          return {
+            feedbacks: await Promise.all(
+              record.feedbackTexts.map(async (feedback) => ({
+                originalText: feedback || "",
+                tags: (
+                  await deidentify(feedback || "", names, nameDictionary)
+                ).map((analyzerResult: { [x: string]: any }) => ({
+                  ...analyzerResult,
+                  name: analyzerResult["label"],
+                } as unknown as Tag)),
+              }))
+            ),
+          };
+        })
+      )) as FeedbackGroup[],
+    };
     return {
       rawData: data,
       config: {
@@ -450,6 +453,7 @@ const Dashboard: React.FC = () => {
         residentNameColumns,
         observerNameColumns,
       },
+      nameDictionary,
       results,
     };
   }
