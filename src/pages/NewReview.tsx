@@ -13,6 +13,7 @@ import {
   IonInput,
   IonItem,
   IonLabel,
+  IonList,
   IonPage,
   IonRow,
   IonText,
@@ -21,11 +22,19 @@ import {
   IonToolbar,
   useIonPopover,
 } from "@ionic/react";
-import { checkmark, create, open, swapHorizontal } from "ionicons/icons";
+import { csvFormat } from "d3-dsv";
+import {
+  checkmark,
+  create,
+  download,
+  open,
+  swapHorizontal,
+} from "ionicons/icons";
 import { useState } from "react";
 import SelectMenu from "../components/SelectMenu";
+import { anonymizeText } from "../utils/anonymizeText";
 import { EntityType } from "../utils/entity-type";
-import { Feedback, Results, Tag } from "../utils/new-data-structure";
+import { DeidData, Feedback, Tag } from "../utils/new-data-structure";
 
 const itemCountPerPage = 10;
 const userId = "";
@@ -36,7 +45,7 @@ let entityChangeHandler: (tagName: string) => void = () => {};
 
 const Dashboard: React.FC = () => {
   const [file, setFile] = useState<any>();
-  const [data, setData] = useState<any>();
+  const [data, setData] = useState<DeidData>();
   const [page, setPage] = useState(1);
   const [shouldShowVideo, setShouldShowVideo] = useState(false);
 
@@ -55,8 +64,23 @@ const Dashboard: React.FC = () => {
       },
     }
   );
+  const [presentExportingPopover, dismissExportingPopover] = useIonPopover(
+    () => (
+      <IonList>
+        <IonItem
+          button
+          onClick={() => {
+            exportCSVReplacingOriginalColumns(userId);
+            dismissExportingPopover();
+          }}
+        >
+          As CSV (replacing original columns)
+        </IonItem>
+      </IonList>
+    )
+  );
 
-  const results: Results = data?.results;
+  const results = data?.results;
 
   return (
     <IonPage>
@@ -64,6 +88,14 @@ const Dashboard: React.FC = () => {
         <IonToolbar>
           <IonTitle>Review</IonTitle>
           <IonButtons slot="end">
+            <IonButton
+              title="Export"
+              onClick={(event) =>
+                presentExportingPopover({ event: event as any })
+              }
+            >
+              <IonIcon slot="icon-only" icon={download}></IonIcon>
+            </IonButton>
             <IonButton title="Open" onClick={() => openFile()}>
               <IonIcon slot="icon-only" icon={open}></IonIcon>
             </IonButton>
@@ -73,39 +105,45 @@ const Dashboard: React.FC = () => {
       <IonContent>
         {renderTips()}
         {renderItems()}
-        <IonFab
-          vertical="bottom"
-          horizontal="center"
-          slot="fixed"
-          style={{ transform: "translateX(-50%)" }}
-        >
-          <IonFabButton
-            disabled={page <= 1}
-            style={{ display: "inline-block" }}
-            onClick={() => setPage(+page - 1)}
-          >
-            {"<"}
-          </IonFabButton>
-          <IonFabButton color="medium" style={{ display: "inline-block" }}>
-            <IonInput
-              type="number"
-              value={page}
-              onIonBlur={({ detail }) => setPage(+(detail.target as any).value)}
-            />
-          </IonFabButton>
-          <IonFabButton
-            disabled={
-              page >= (results?.feedbackGroups?.length || 0) / itemCountPerPage
-            }
-            style={{ display: "inline-block" }}
-            onClick={() => setPage(+page + 1)}
-          >
-            {">"}
-          </IonFabButton>
-        </IonFab>
+        {renderPageControl()}
       </IonContent>
     </IonPage>
   );
+
+  function renderPageControl() {
+    return (
+      <IonFab
+        vertical="bottom"
+        horizontal="center"
+        slot="fixed"
+        style={{ transform: "translateX(-50%)" }}
+      >
+        <IonFabButton
+          disabled={page <= 1}
+          style={{ display: "inline-block" }}
+          onClick={() => setPage(+page - 1)}
+        >
+          {"<"}
+        </IonFabButton>
+        <IonFabButton color="medium" style={{ display: "inline-block" }}>
+          <IonInput
+            type="number"
+            value={page}
+            onIonBlur={({ detail }) => setPage(+(detail.target as any).value)}
+          />
+        </IonFabButton>
+        <IonFabButton
+          disabled={
+            page >= (results?.feedbackGroups?.length || 0) / itemCountPerPage
+          }
+          style={{ display: "inline-block" }}
+          onClick={() => setPage(+page + 1)}
+        >
+          {">"}
+        </IonFabButton>
+      </IonFab>
+    );
+  }
 
   function renderItems() {
     return (
@@ -423,6 +461,40 @@ const Dashboard: React.FC = () => {
         })),
       },
     };
+  }
+
+  async function exportCSVReplacingOriginalColumns(userId: string) {
+    const deidentifiedData = data?.rawData?.map((record, recordIndex) => {
+      const result = record;
+      data?.config?.feedbackColumns?.forEach((columnName, columnIndex) => {
+        const feedback =
+          data?.results?.feedbackGroups?.[recordIndex]?.feedbacks?.[
+            columnIndex
+          ];
+        result[columnName] = anonymizeText(
+          result?.[columnName] || "",
+          feedback?.userTagsDict?.[userId].map((tag) => ({
+            ...tag,
+            name: tag.label,
+          })) || []
+        );
+      });
+      return result;
+    });
+    const csvString = csvFormat(deidentifiedData || []);
+
+    const fileHandle = await (window as any).showSaveFilePicker({
+      suggestedName: `export-${new Date().toISOString()}`,
+      types: [
+        {
+          description: "Comma-Separated Values File",
+          accept: { "text/csv": [".csv"] },
+        },
+      ],
+    });
+    const writable = await fileHandle.createWritable();
+    await writable.write(csvString);
+    await writable.close();
   }
 };
 
