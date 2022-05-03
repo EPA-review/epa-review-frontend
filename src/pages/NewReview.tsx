@@ -44,7 +44,9 @@ let fileHandle: any;
 let selectPopoverValue = "";
 let entityChangeHandler: (tagName: string) => void = () => {};
 
-const Dashboard: React.FC = () => {
+const Dashboard: React.FC<{ passedInFileHandle?: any }> = ({
+  passedInFileHandle,
+}) => {
   const [file, setFile] = useState<any>();
   const [data, setData] = useState<DeidData>();
   const [page, setPage] = useState(1);
@@ -82,16 +84,10 @@ const Dashboard: React.FC = () => {
   );
 
   useEffect(() => {
-    if ("launchQueue" in window) {
-      (window as any)["launchQueue"].setConsumer((launchParams: any) => {
-        if (launchParams.files?.length > 0) {
-          for (const fileHandle of launchParams.files) {
-            openFile(fileHandle);
-          }
-        }
-      });
+    if (passedInFileHandle) {
+      openFile(passedInFileHandle);
     }
-  }, []);
+  }, [passedInFileHandle]);
 
   const results = data?.results;
 

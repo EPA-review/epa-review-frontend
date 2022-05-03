@@ -47,6 +47,18 @@ const App: React.FC = () => {
   }, [theme]);
 
   useEffect(() => {
+    let fileHandle: any;
+    if ("launchQueue" in window) {
+      (window as any)["launchQueue"].setConsumer((launchParams: any) => {
+        if (launchParams.files?.length > 0) {
+          for (const file of launchParams.files) {
+            fileHandle = file;
+          }
+          window.location.hash = "#/new/review";
+        }
+      });
+    }
+
     async function generateRouterOutlet() {
       let signedInUser: User | undefined;
       if (!window.location.hash.match(/^#\/new/)) {
@@ -108,7 +120,7 @@ const App: React.FC = () => {
             <NewLoadDataset />
           </Route>
           <Route exact path="/new/review">
-            <NewReview />
+            <NewReview passedInFileHandle={fileHandle} />
           </Route>
         </IonRouterOutlet>
       );
