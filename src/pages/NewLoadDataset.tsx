@@ -410,7 +410,7 @@ const Dashboard: React.FC = () => {
       });
       setProcessing(true);
       const writable = await fileHandle.createWritable();
-      const result = await process();
+      const result = await processData();
       await writable.write(JSON.stringify(result));
       await writable.close();
       alert("Deidentification finished and the project file is saved.");
@@ -418,7 +418,7 @@ const Dashboard: React.FC = () => {
     }, 100);
   }
 
-  async function process() {
+  async function processData() {
     const records = data?.map((record) => ({
       feedbackTexts: feedbackColumns?.map((columnName) => record[columnName]),
       residentNames:
@@ -468,10 +468,7 @@ const Dashboard: React.FC = () => {
   async function loadDeidentifier() {
     if (!pyodide) {
       pyodide = await (window as any).loadPyodide({
-        indexURL: `${window.location.origin}${window.location.pathname.replace(
-          /\/$/,
-          ""
-        )}/pyodide`,
+        indexURL: `${process.env.PUBLIC_URL}/pyodide`,
       });
     }
     const response = await fetch("./deidentifier.py");
