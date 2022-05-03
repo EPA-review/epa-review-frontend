@@ -1,6 +1,6 @@
 import { Redirect, Route } from "react-router-dom";
 import { IonApp, IonRouterOutlet, setupIonicReact } from "@ionic/react";
-import { IonReactHashRouter } from "@ionic/react-router";
+import { IonReactRouter } from "@ionic/react-router";
 import Home from "./pages/Home";
 
 /* Core CSS required for Ionic components to work properly */
@@ -130,7 +130,7 @@ const App: React.FC = () => {
 
   return (
     <IonApp>
-      <IonReactHashRouter>{routerOutlet}</IonReactHashRouter>
+      <IonReactRouter>{routerOutlet}</IonReactRouter>
     </IonApp>
   );
 };
