@@ -1,5 +1,5 @@
 import { Redirect, Route } from "react-router-dom";
-import { IonApp, IonRouterOutlet } from "@ionic/react";
+import { IonApp, IonRouterOutlet, setupIonicReact } from "@ionic/react";
 import { IonReactHashRouter } from "@ionic/react-router";
 import Home from "./pages/Home";
 
@@ -124,3 +124,5 @@ const App: React.FC = () => {
 };
 
 export default App;
+
+setupIonicReact();
