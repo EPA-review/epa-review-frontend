@@ -50,5 +50,5 @@ const MainMenu: React.FC<{
 export default MainMenu;
 
 function convertNameToPath(name: string) {
-  return '/' + (name.replace(' ', '-').toLowerCase());
+  return process.env.PUBLIC_URL + '/' + (name.replace(' ', '-').toLowerCase());
 }
