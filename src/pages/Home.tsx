@@ -29,6 +29,8 @@ const Home: React.FC = () => {
     { name: "password", label: "Password", type: "password", require: true },
   ];
 
+  debugger;
+  const a = process.env;
   return (
     <IonPage>
       <IonContent>
@@ -64,7 +66,11 @@ const Home: React.FC = () => {
                 Sign in
               </IonButton>
             </form>
-            <IonButton fill="outline" expand="block" href={`${process.env.PUBLIC_URL}/new`}>
+            <IonButton
+              fill="outline"
+              expand="block"
+              href={`${process.env.PUBLIC_URL}/new`}
+            >
               Use Local Mode
             </IonButton>
           </IonCardContent>
