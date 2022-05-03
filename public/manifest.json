@@ -1,6 +1,6 @@
 {
   "short_name": "EPA Deid",
-  "name": "EPA Deidentification (Local Mode)",
+  "name": "EPA Deidentification",
   "icons": [
     {
       "src": "assets/icon/favicon.png",
@@ -25,7 +25,7 @@
   "background_color": "#ffffff",
   "file_handlers": [
     {
-      "action": "/",
+      "action": "./#/new/review",
       "accept": {
         "application/vnd.epadeid+json": [".deid"]
       }
