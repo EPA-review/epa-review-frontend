@@ -1,4 +1,5 @@
 import {
+  IonBackButton,
   IonButton,
   IonButtons,
   IonCard,
@@ -86,6 +87,9 @@ const Dashboard: React.FC = () => {
     <IonPage>
       <IonHeader>
         <IonToolbar>
+          <IonButtons slot="start">
+            <IonBackButton defaultHref="/new" />
+          </IonButtons>
           <IonTitle>Review</IonTitle>
           <IonButtons slot="end">
             <IonButton

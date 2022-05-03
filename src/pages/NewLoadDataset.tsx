@@ -1,4 +1,5 @@
 import {
+  IonBackButton,
   IonButton,
   IonButtons,
   IonCard,
@@ -48,6 +49,9 @@ const Dashboard: React.FC = () => {
     <IonPage>
       <IonHeader>
         <IonToolbar>
+          <IonButtons slot="start">
+            <IonBackButton defaultHref="/new" />
+          </IonButtons>
           <IonTitle>Load Dataset</IonTitle>
           <IonButtons slot="end">
             <IonButton title="User">
@@ -436,10 +440,13 @@ const Dashboard: React.FC = () => {
                 originalText: feedback || "",
                 tags: (
                   await deidentify(feedback || "", names, nameDictionary)
-                ).map((analyzerResult: { [x: string]: any }) => ({
-                  ...analyzerResult,
-                  name: analyzerResult["label"],
-                } as unknown as Tag)),
+                ).map(
+                  (analyzerResult: { [x: string]: any }) =>
+                    ({
+                      ...analyzerResult,
+                      name: analyzerResult["label"],
+                    } as unknown as Tag)
+                ),
               }))
             ),
           };

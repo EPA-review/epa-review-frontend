@@ -64,7 +64,7 @@ const Home: React.FC = () => {
                 Sign in
               </IonButton>
             </form>
-            <IonButton fill="outline" expand="block" href="./#/local">
+            <IonButton fill="outline" expand="block" href="./#/new">
               Use Local Mode
             </IonButton>
           </IonCardContent>

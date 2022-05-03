@@ -35,6 +35,8 @@ import LocalMode from "./pages/LocalMode";
 import LocalModeReviewDetail from "./pages/LocalModeReviewDetail";
 import NewLoadDataset from "./pages/NewLoadDataset";
 import NewReview from "./pages/NewReview";
+import { User } from "./utils/User";
+import NewHome from "./pages/NewHome";
 
 const App: React.FC = () => {
   const theme = getActualTheme();
@@ -46,8 +48,11 @@ const App: React.FC = () => {
 
   useEffect(() => {
     async function generateRouterOutlet() {
-      const signedInUser = await fetchUser();
-      sessionStorage.setItem("userId", signedInUser?._id || "");
+      let signedInUser: User | undefined;
+      if (!window.location.hash.match(/^#\/new/)) {
+        signedInUser = await fetchUser();
+        sessionStorage.setItem("userId", signedInUser?._id || "");
+      }
       setRouterOutlet(
         <IonRouterOutlet>
           <Route exact path="/">
@@ -95,6 +100,9 @@ const App: React.FC = () => {
           </Route>
           <Route exact path="/local/review">
             <LocalModeReviewDetail />
+          </Route>
+          <Route exact path="/new">
+            <NewHome />
           </Route>
           <Route exact path="/new/load">
             <NewLoadDataset />
