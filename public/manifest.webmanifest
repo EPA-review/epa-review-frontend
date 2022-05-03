@@ -19,13 +19,13 @@
       "purpose": "maskable"
     }
   ],
-  "start_url": "/new",
+  "start_url": "./new",
   "display": "standalone",
   "theme_color": "#ffffff",
   "background_color": "#ffffff",
   "file_handlers": [
     {
-      "action": "/new/review",
+      "action": "./new/review",
       "accept": {
         "application/vnd.epadeid+json": [".deid"]
       }

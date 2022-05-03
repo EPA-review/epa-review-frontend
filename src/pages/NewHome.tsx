@@ -68,10 +68,10 @@ const NewHome: React.FC = () => {
             )}
           </IonCardContent>
         </IonCard>
-        <IonButton href="/new/load">
+        <IonButton href={`${process.env.PUBLIC_URL}/new/load`}>
           Format and deidentify a New Dataset
         </IonButton>
-        <IonButton href="/new/review">
+        <IonButton href={`${process.env.PUBLIC_URL}/new/review`}>
           Review my deidentified Data
         </IonButton>
       </IonContent>

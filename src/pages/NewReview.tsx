@@ -96,7 +96,7 @@ const Dashboard: React.FC<{ passedInFileHandle?: any }> = ({
       <IonHeader>
         <IonToolbar>
           <IonButtons slot="start">
-            <IonBackButton defaultHref="/new" />
+            <IonBackButton defaultHref={`${process.env.PUBLIC_URL}/new`} />
           </IonButtons>
           <IonTitle>Review</IonTitle>
           <IonButtons slot="end">

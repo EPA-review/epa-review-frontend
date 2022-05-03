@@ -64,7 +64,7 @@ const Home: React.FC = () => {
                 Sign in
               </IonButton>
             </form>
-            <IonButton fill="outline" expand="block" href="./#/new">
+            <IonButton fill="outline" expand="block" href={`${process.env.PUBLIC_URL}/new`}>
               Use Local Mode
             </IonButton>
           </IonCardContent>
