@@ -274,6 +274,7 @@ const Dashboard: React.FC = () => {
               </IonCol>
             </IonRow>
           ))}
+        <IonRow style={{ height: "5rem" }}></IonRow>
       </IonGrid>
     );
   }
