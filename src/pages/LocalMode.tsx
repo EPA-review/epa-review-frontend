@@ -68,10 +68,10 @@ const Dashboard: React.FC = () => {
             )}
           </IonCardContent>
         </IonCard>
-        <IonButton href="./#/local/new">
+        <IonButton href="/local/new">
           Format and deidentify a New Dataset
         </IonButton>
-        <IonButton href="./#/local/review">
+        <IonButton href="/local/review">
           Review my deidentified Data
         </IonButton>
       </IonContent>

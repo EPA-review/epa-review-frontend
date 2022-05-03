@@ -259,7 +259,7 @@ const LocalModeLoadNew: React.FC = () => {
               : "Deidentify and save the project file"}
           </IonButton>
           <br />
-          <IonButton href="./#/local/review">Review my Data</IonButton>
+          <IonButton href="/local/review">Review my Data</IonButton>
           <br />
           <IonButton
             fill="outline"

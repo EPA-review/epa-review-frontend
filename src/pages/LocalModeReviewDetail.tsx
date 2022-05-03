@@ -90,7 +90,7 @@ const LocalModeReviewDetail: React.FC = () => {
       <IonHeader>
         <IonToolbar>
           <IonButtons slot="start">
-            <IonBackButton defaultHref="./#/local" />
+            <IonBackButton defaultHref="/local" />
           </IonButtons>
           <IonTitle>EPA Deidentification Review (Local Mode)</IonTitle>
           <IonButtons slot="end">
