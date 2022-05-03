@@ -6,7 +6,6 @@ import {
   IonCardContent,
   IonCardHeader,
   IonContent,
-  IonImg,
   IonInput,
   IonItem,
   IonLabel,
@@ -29,8 +28,6 @@ const Home: React.FC = () => {
     { name: "password", label: "Password", type: "password", require: true },
   ];
 
-  debugger;
-  const a = process.env;
   return (
     <IonPage>
       <IonContent>
