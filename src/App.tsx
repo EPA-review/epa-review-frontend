@@ -130,7 +130,9 @@ const App: React.FC = () => {
 
   return (
     <IonApp>
-      <IonReactRouter>{routerOutlet}</IonReactRouter>
+      <IonReactRouter basename={process.env.PUBLIC_URL}>
+        {routerOutlet}
+      </IonReactRouter>
     </IonApp>
   );
 };
