@@ -31,7 +31,7 @@ import {
   open,
   swapHorizontal,
 } from "ionicons/icons";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import SelectMenu from "../components/SelectMenu";
 import { anonymizeText } from "../utils/anonymizeText";
 import { EntityType } from "../utils/entity-type";
@@ -80,6 +80,18 @@ const Dashboard: React.FC = () => {
       </IonList>
     )
   );
+
+  useEffect(() => {
+    if ("launchQueue" in window) {
+      (window as any)["launchQueue"].setConsumer((launchParams: any) => {
+        if (launchParams.files?.length > 0) {
+          for (const fileHandle of launchParams.files) {
+            openFile(fileHandle);
+          }
+        }
+      });
+    }
+  }, []);
 
   const results = data?.results;
 
