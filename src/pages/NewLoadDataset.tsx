@@ -466,12 +466,14 @@ const Dashboard: React.FC = () => {
   }
 
   async function loadDeidentifier() {
-    pyodide = await (window as any).loadPyodide({
-      indexURL: `${window.location.origin}${window.location.pathname.replace(
-        /\/$/,
-        ""
-      )}/pyodide`,
-    });
+    if (!pyodide) {
+      pyodide = await (window as any).loadPyodide({
+        indexURL: `${window.location.origin}${window.location.pathname.replace(
+          /\/$/,
+          ""
+        )}/pyodide`,
+      });
+    }
     const response = await fetch("./deidentifier.py");
     const pythonScript = await response.text();
     pyodide.runPython(pythonScript);
