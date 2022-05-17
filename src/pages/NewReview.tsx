@@ -529,6 +529,12 @@ const Dashboard: React.FC = () => {
     if (confirmIfNotAllRecordsAreReviewed()) {
       const deidentifiedData = data?.rawData?.map((record, recordIndex) => {
         const result = record;
+        data?.config?.observerNameColumns?.forEach(
+          (columnName) => (result[columnName] = recordIndex.toString())
+        );
+        data?.config?.residentNameColumns?.forEach(
+          (columnName) => (result[columnName] = recordIndex.toString())
+        );
         data?.config?.feedbackColumns?.forEach((columnName, columnIndex) => {
           const feedback =
             data?.results?.feedbackGroups?.[recordIndex]?.feedbacks?.[
