@@ -49,7 +49,7 @@ const App: React.FC = () => {
   useEffect(() => {
     async function generateRouterOutlet() {
       let signedInUser: User | undefined;
-      if (!window.location.hash.match(/^#\/new/)) {
+      if (!window.location.pathname.match(/^\/new/)) {
         signedInUser = await fetchUser();
         sessionStorage.setItem("userId", signedInUser?._id || "");
       }
