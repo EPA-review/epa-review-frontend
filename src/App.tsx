@@ -49,7 +49,8 @@ const App: React.FC = () => {
   useEffect(() => {
     async function generateRouterOutlet() {
       let signedInUser: User | undefined;
-      if (!window.location.pathname.match(/^\/new/)) {
+      const pathPattern = `^/${process.env.PUBLIC_URL}/new`;
+      if (!window.location.pathname.match(new RegExp(pathPattern))) {
         signedInUser = await fetchUser();
         sessionStorage.setItem("userId", signedInUser?._id || "");
       }
