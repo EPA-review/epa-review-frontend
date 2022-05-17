@@ -32,7 +32,7 @@ import {
 } from "ionicons/icons";
 import { useEffect, useState } from "react";
 import SelectMenu from "../components/SelectMenu";
-import { anonymizeText } from "../utils/anonymizeText";
+import { anonymizeTextOld } from "../utils/anonymizeText";
 import { EntityType } from "../utils/entity-type";
 import { EpaRecordForView, Tag } from "../utils/epa-record";
 import * as xlsx from "xlsx";
@@ -488,8 +488,8 @@ const LocalModeReviewDetail: React.FC = () => {
     const exportContent = currentData?.map((epaRecord, i) => ({
       index: i + 1,
       originalText: epaRecord.originalText,
-      auto: anonymizeText(epaRecord.originalText || "", epaRecord.tags || []),
-      user: anonymizeText(
+      auto: anonymizeTextOld(epaRecord.originalText || "", epaRecord.tags || []),
+      user: anonymizeTextOld(
         epaRecord.originalText || "",
         epaRecord.userTags?.[userId] || []
       ),
@@ -536,8 +536,8 @@ const LocalModeReviewDetail: React.FC = () => {
     const exportContent = currentData?.map((epaRecord, i) => ({
       index: i + 1,
       originalText: epaRecord.originalText,
-      auto: anonymizeText(epaRecord.originalText || "", epaRecord.tags || []),
-      user: anonymizeText(
+      auto: anonymizeTextOld(epaRecord.originalText || "", epaRecord.tags || []),
+      user: anonymizeTextOld(
         epaRecord.originalText || "",
         epaRecord.userTags?.[userId] || []
       ),

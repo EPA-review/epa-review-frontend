@@ -33,9 +33,22 @@ import {
 } from "ionicons/icons";
 import { useEffect, useState } from "react";
 import SelectMenu from "../components/SelectMenu";
-import { anonymizeText } from "../utils/anonymizeText";
+import { anonymizeText, anonymizeTextOld } from "../utils/anonymizeText";
 import { EntityType } from "../utils/entity-type";
-import { DeidData, Feedback, Tag } from "../utils/new-data-structure";
+import {
+  DeidData,
+  Feedback,
+  FeedbackGroup,
+  Tag,
+} from "../utils/new-data-structure";
+import * as xlsx from "xlsx";
+
+type ConfusionMatrix = {
+  truePositive: number;
+  trueNegative: number;
+  falsePositive: number;
+  falseNegative: number;
+};
 
 const itemCountPerPage = 10;
 const userId = "";
@@ -71,11 +84,20 @@ const Dashboard: React.FC = () => {
         <IonItem
           button
           onClick={() => {
-            exportCSVReplacingOriginalColumns(userId);
+            exportDeidentifiedOriginalFile(userId);
             dismissExportingPopover();
           }}
         >
-          As CSV (replacing original columns)
+          Deidentified version of the original file
+        </IonItem>
+        <IonItem
+          button
+          onClick={() => {
+            exportResearchFile(userId);
+            dismissExportingPopover();
+          }}
+        >
+          Research file
         </IonItem>
       </IonList>
     )
@@ -136,15 +158,11 @@ const Dashboard: React.FC = () => {
       <IonFab vertical="bottom" horizontal="end" slot="fixed">
         <IonFabButton
           title="Check all on this page"
-          disabled={
-            currentPageFeedbackGroups
-              ?.map((feedbackGroup) =>
-                feedbackGroup?.feedbacks
-                  ?.map((feedback) => feedback?.userTagsDict?.[userId])
-                  ?.every((d) => d)
-              )
-              .every((d) => d)
-          }
+          disabled={currentPageFeedbackGroups
+            ?.map((feedbackGroup) =>
+              determineFeedbackGroupReviewed(feedbackGroup)
+            )
+            .every((d) => d)}
           color="success"
           onClick={() => {
             currentPageFeedbackGroups?.forEach((feedbackGroup) =>
@@ -283,7 +301,7 @@ const Dashboard: React.FC = () => {
                         <IonButton
                           color="success"
                           fill={
-                            feedback?.userTagsDict?.[userId] &&
+                            determineFeedbackReviewed(feedback) &&
                             !feedback.editing
                               ? "solid"
                               : "clear"
@@ -507,38 +525,154 @@ const Dashboard: React.FC = () => {
     };
   }
 
-  async function exportCSVReplacingOriginalColumns(userId: string) {
-    const deidentifiedData = data?.rawData?.map((record, recordIndex) => {
-      const result = record;
-      data?.config?.feedbackColumns?.forEach((columnName, columnIndex) => {
-        const feedback =
-          data?.results?.feedbackGroups?.[recordIndex]?.feedbacks?.[
-            columnIndex
-          ];
-        result[columnName] = anonymizeText(
-          result?.[columnName] || "",
-          feedback?.userTagsDict?.[userId].map((tag) => ({
-            ...tag,
-            name: tag.label,
-          })) || []
-        );
+  async function exportDeidentifiedOriginalFile(userId: string) {
+    if (confirmIfNotAllRecordsAreReviewed()) {
+      const deidentifiedData = data?.rawData?.map((record, recordIndex) => {
+        const result = record;
+        data?.config?.feedbackColumns?.forEach((columnName, columnIndex) => {
+          const feedback =
+            data?.results?.feedbackGroups?.[recordIndex]?.feedbacks?.[
+              columnIndex
+            ];
+          result[columnName] = anonymizeText(
+            result?.[columnName] || "",
+            feedback?.userTagsDict?.[userId].map((tag) => ({
+              ...tag,
+            })) || []
+          );
+        });
+        return result;
       });
-      return result;
-    });
-    const csvString = csvFormat(deidentifiedData || []);
+      const csvString = csvFormat(deidentifiedData || []);
 
-    const fileHandle = await (window as any).showSaveFilePicker({
-      suggestedName: `export-${new Date().toISOString()}`,
-      types: [
-        {
-          description: "Comma-Separated Values File",
-          accept: { "text/csv": [".csv"] },
-        },
-      ],
-    });
-    const writable = await fileHandle.createWritable();
-    await writable.write(csvString);
-    await writable.close();
+      const fileHandle = await (window as any).showSaveFilePicker({
+        suggestedName: `export-${new Date().toISOString()}`,
+        types: [
+          {
+            description: "Comma-Separated Values File",
+            accept: { "text/csv": [".csv"] },
+          },
+        ],
+      });
+      const writable = await fileHandle.createWritable();
+      await writable.write(csvString);
+      await writable.close();
+    }
+  }
+
+  async function exportResearchFile(userId: string) {
+    if (confirmIfNotAllRecordsAreReviewed()) {
+      const exportContent = results?.feedbackGroups?.flatMap(
+        (feedbackGroup, groupIndex) =>
+          feedbackGroup?.feedbacks?.map((feedback, feedbackIndex) => ({
+            groupIndex,
+            feedbackIndex,
+            originalText: feedback?.originalText,
+            auto: anonymizeText(
+              feedback?.originalText || "",
+              feedback?.tags || []
+            ),
+            user: anonymizeText(
+              feedback?.originalText || "",
+              feedback?.userTagsDict?.[userId] || []
+            ),
+            ...(feedback?.userTagsDict?.[userId]
+              ? generateConfusionMatrix(
+                  feedback?.originalText || "",
+                  feedback?.tags || [],
+                  feedback?.userTagsDict?.[userId] || []
+                )
+              : {}),
+          }))
+      );
+      const workbook = xlsx.utils.book_new();
+      workbook.SheetNames.push("default");
+      workbook.Sheets["default"] = xlsx.utils.json_to_sheet(
+        exportContent || []
+      );
+      const workbookBuffer = xlsx.write(workbook, {
+        bookType: "xlsx",
+        type: "buffer",
+      });
+
+      const fileHandle = await (window as any).showSaveFilePicker({
+        suggestedName: `export-${new Date().toISOString()}`,
+        types: [
+          {
+            description: "Microsoft Excel Worksheet",
+            accept: { "application/octet-stream": [".xlsx"] },
+          },
+        ],
+      });
+      const writable = await fileHandle.createWritable();
+      await writable.write(workbookBuffer);
+      await writable.close();
+    }
+  }
+
+  function confirmIfNotAllRecordsAreReviewed() {
+    const feedbackGroups = results?.feedbackGroups;
+    const feedbackGroupCount = feedbackGroups?.length || 0;
+    const reviewedFeedbackGroupCount =
+      feedbackGroups
+        ?.map((feedbackGroup) => determineFeedbackGroupReviewed(feedbackGroup))
+        ?.filter(Boolean)?.length || 0;
+    if (feedbackGroupCount > reviewedFeedbackGroupCount) {
+      return window.confirm(
+        `You have not yet checked all records (${reviewedFeedbackGroupCount} of ${feedbackGroupCount} checked), are you sure you are ready to export?`
+      );
+    } else {
+      return true;
+    }
+  }
+
+  function generateConfusionMatrix(text: string, tags: Tag[], userTags: Tag[]) {
+    const wordSplitRegEx = /\w+/g;
+    const textWordCount =
+      text
+        .match(wordSplitRegEx)
+        ?.map((d) => d.trim())
+        .filter(Boolean).length ?? Number.NaN;
+    const taggedItemCount =
+      (tags?.length ?? 0) +
+      (userTags?.filter(
+        (userTag) => !tags?.find((tag) => checkTwoTagOverlaying(tag, userTag))
+      )?.length ?? 0);
+
+    return {
+      truePositive:
+        userTags?.filter((userTag) =>
+          tags?.find((tag) => checkTwoTagsSame(tag, userTag))
+        )?.length ?? Number.NaN,
+      trueNegative:
+        text.length === 0 ? 0 : textWordCount - taggedItemCount ?? Number.NaN,
+      falsePositive:
+        tags?.filter(
+          (tag) => !userTags?.find((userTag) => checkTwoTagsSame(tag, userTag))
+        )?.length ?? Number.NaN,
+      falseNegative:
+        userTags?.filter(
+          (userTag) => !tags?.find((tag) => checkTwoTagsSame(tag, userTag))
+        )?.length ?? Number.NaN,
+    } as ConfusionMatrix;
+  }
+
+  function checkTwoTagsSame(tag1: Tag, tag2: Tag) {
+    return checkTwoTagOverlaying(tag1, tag2) && tag1.label === tag2.label;
+  }
+
+  function checkTwoTagOverlaying(tag1: Tag, tag2: Tag) {
+    return tag1.start <= tag2.end && tag1.end >= tag2.start;
+  }
+
+  function determineFeedbackGroupReviewed(feedbackGroup: FeedbackGroup) {
+    return feedbackGroup?.feedbacks
+      ?.map((feedback) => determineFeedbackReviewed(feedback))
+      ?.every(Boolean);
+  }
+
+  function determineFeedbackReviewed(feedback: Feedback) {
+    return !!feedback?.userTagsDict?.[userId];
   }
 };
 

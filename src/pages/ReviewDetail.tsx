@@ -34,7 +34,7 @@ import { SetStateAction, useEffect, useState } from "react";
 import { useParams } from "react-router";
 import SelectMenu from "../components/SelectMenu";
 import UserMenu from "../components/UserMenu";
-import { anonymizeText } from "../utils/anonymizeText";
+import { anonymizeTextOld } from "../utils/anonymizeText";
 import { EntityType } from "../utils/entity-type";
 import ServerInfo from "../utils/ServerInfo";
 import * as xlsx from "xlsx";
@@ -534,8 +534,8 @@ async function exportCSV(groupTag: string, userId: string) {
   const exportContent = currentData?.map((datum, i) => ({
     index: i + 1,
     originalText: datum.originalText,
-    auto: anonymizeText(datum.originalText, datum.tags),
-    user: anonymizeText(datum.originalText, datum.userTags?.[userId]),
+    auto: anonymizeTextOld(datum.originalText, datum.tags),
+    user: anonymizeTextOld(datum.originalText, datum.userTags?.[userId]),
     ...generateConfusionMatrix(
       datum.originalText,
       datum.tags,
@@ -577,8 +577,8 @@ async function exportXLSX(groupTag: string, userId: string) {
   const exportContent = currentData?.map((datum, i) => ({
     index: i + 1,
     originalText: datum.originalText,
-    auto: anonymizeText(datum.originalText, datum.tags),
-    user: anonymizeText(datum.originalText, datum.userTags?.[userId]),
+    auto: anonymizeTextOld(datum.originalText, datum.tags),
+    user: anonymizeTextOld(datum.originalText, datum.userTags?.[userId]),
     ...generateConfusionMatrix(
       datum.originalText,
       datum.tags,
