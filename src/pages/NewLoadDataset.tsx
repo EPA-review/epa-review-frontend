@@ -473,7 +473,7 @@ const Dashboard: React.FC = () => {
         indexURL: `${process.env.PUBLIC_URL}/pyodide`,
       });
     }
-    const response = await fetch("./deidentifier.py");
+    const response = await fetch(`${process.env.PUBLIC_URL}/deidentifier.py`);
     const pythonScript = await response.text();
     pyodide.runPython(pythonScript);
     pythonDeidentifier = pyodide.runPython(`AnonymizeText`);
