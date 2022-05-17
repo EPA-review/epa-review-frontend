@@ -126,7 +126,7 @@ const Dashboard: React.FC = () => {
       <IonHeader>
         <IonToolbar>
           <IonButtons slot="start">
-            <IonBackButton defaultHref={`${process.env.PUBLIC_URL}/new`} />
+            <IonBackButton defaultHref='/new' />
           </IonButtons>
           <IonTitle>Review</IonTitle>
           <IonButtons slot="end">
