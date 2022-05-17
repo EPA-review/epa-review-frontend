@@ -229,7 +229,7 @@ const Dashboard: React.FC = () => {
                         : ""
                     }
                   >
-                    {i}
+                    {(page - 1) * itemCountPerPage + i}
                   </IonText>
                 </IonCardContent>
               </IonCard>
