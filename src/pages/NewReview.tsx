@@ -33,7 +33,7 @@ import {
 } from "ionicons/icons";
 import { useEffect, useState } from "react";
 import SelectMenu from "../components/SelectMenu";
-import { anonymizeText, anonymizeTextOld } from "../utils/anonymizeText";
+import { anonymizeText } from "../utils/anonymizeText";
 import { EntityType } from "../utils/entity-type";
 import {
   DeidData,
