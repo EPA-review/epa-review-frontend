@@ -341,7 +341,7 @@ const Dashboard: React.FC = () => {
 
   async function loadNameDictionaryFile(useDefault?: boolean) {
     if (useDefault) {
-      const response = await fetch("./assets/nicknames.json");
+      const response = await fetch(`${process.env.PUBLIC_URL}/new/load/assets/nicknames.json`);
       setNameDictionary(await response.json());
     } else {
       const fileHandle = (await (window as any).showOpenFilePicker())?.[0];
@@ -358,7 +358,7 @@ const Dashboard: React.FC = () => {
 
   async function exportDefaultNameDictionaryFile() {
     try {
-      const responese = await fetch("./assets/nicknames.json");
+      const responese = await fetch(`${process.env.PUBLIC_URL}/new/load/assets/nicknames.json`);
       const dict = await responese.json();
       const text = convertNameDictionaryFromObjectToCSV(dict);
       const fileHandle = await (window as any).showSaveFilePicker({
