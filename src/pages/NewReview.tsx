@@ -94,6 +94,10 @@ const Dashboard: React.FC = () => {
   }, []);
 
   const results = data?.results;
+  const currentPageFeedbackGroups = results?.feedbackGroups?.slice(
+    itemCountPerPage * (page - 1),
+    itemCountPerPage * page
+  );
 
   return (
     <IonPage>
@@ -122,9 +126,37 @@ const Dashboard: React.FC = () => {
         {renderTips()}
         {renderItems()}
         {renderPageControl()}
+        {renderCheckAllButton()}
       </IonContent>
     </IonPage>
   );
+
+  function renderCheckAllButton() {
+    return (
+      <IonFab vertical="bottom" horizontal="end" slot="fixed">
+        <IonFabButton
+          title="Check all on this page"
+          disabled={
+            currentPageFeedbackGroups
+              ?.map((feedbackGroup) =>
+                feedbackGroup?.feedbacks
+                  ?.map((feedback) => feedback?.userTagsDict?.[userId])
+                  ?.every((d) => d)
+              )
+              .every((d) => d)
+          }
+          color="success"
+          onClick={() => {
+            currentPageFeedbackGroups?.forEach((feedbackGroup) =>
+              feedbackGroup?.feedbacks?.forEach((feedback) => submit(feedback))
+            );
+          }}
+        >
+          <IonIcon icon={checkmark} style={{ pointerEvents: "none" }}></IonIcon>
+        </IonFabButton>
+      </IonFab>
+    );
+  }
 
   function renderPageControl() {
     return (
@@ -164,116 +196,111 @@ const Dashboard: React.FC = () => {
   function renderItems() {
     return (
       <IonGrid>
-        {results?.feedbackGroups
-          ?.slice(itemCountPerPage * (page - 1), itemCountPerPage * page)
-          ?.map((feedbackGroup, i) => (
-            <IonRow key={i}>
-              <IonCol size="auto">
-                <IonCard>
-                  <IonCardContent>
-                    <IonText
-                      color={
-                        feedbackGroup.feedbacks.every(
-                          ({ userTagsDict, editing }) =>
-                            userTagsDict?.[userId] && !editing
-                        )
-                          ? "success"
-                          : ""
-                      }
-                    >
-                      {i}
-                    </IonText>
-                  </IonCardContent>
-                </IonCard>
-              </IonCol>
-              <IonCol>
-                {feedbackGroup?.feedbacks?.map((feedback, i) => {
-                  if (feedback.showingModifiedTags === undefined) {
-                    feedback.showingModifiedTags = true;
-                  }
-                  return (
-                    <IonRow key={i}>
-                      <IonCol>
-                        <IonCard>
-                          <IonCardContent>
-                            <s-magic-text
-                              ref={(el: HTMLSMagicTextElement) => {
-                                if (el) {
-                                  configMagicText(el, feedback);
-                                }
-                              }}
-                            />
-                          </IonCardContent>
-                        </IonCard>
-                      </IonCol>
-                      <IonCol size="auto">
-                        <IonCard style={{ width: "auto" }}>
-                          <IonButton
-                            color="primary"
-                            fill={
-                              feedback?.showingModifiedTags ? "solid" : "clear"
-                            }
-                            title="Toggle auto/user labels"
-                            onClick={() => {
-                              feedback.showingModifiedTags =
-                                !feedback?.showingModifiedTags;
-                              feedback.editing = false;
-                              forceUpdate();
-                            }}
-                          >
-                            <IonIcon
-                              slot="icon-only"
-                              icon={swapHorizontal}
-                            ></IonIcon>
-                          </IonButton>
-                          <IonButton
-                            color="warning"
-                            fill={feedback.editing ? "solid" : "clear"}
-                            title="Edit"
-                            onClick={() => {
-                              feedback.editing = !feedback?.editing;
-                              if (
-                                feedback.editing &&
-                                feedback?.userTagsDict?.[userId]
-                              ) {
-                                feedback.currentUserTagsBackup = [
-                                  ...feedback?.userTagsDict[userId],
-                                ];
-                              } else {
-                                if (feedback?.userTagsDict) {
-                                  feedback.userTagsDict[userId] =
-                                    feedback.currentUserTagsBackup;
-                                }
+        {currentPageFeedbackGroups?.map((feedbackGroup, i) => (
+          <IonRow key={i}>
+            <IonCol size="auto">
+              <IonCard>
+                <IonCardContent>
+                  <IonText
+                    color={
+                      feedbackGroup.feedbacks.every(
+                        ({ userTagsDict, editing }) =>
+                          userTagsDict?.[userId] && !editing
+                      )
+                        ? "success"
+                        : ""
+                    }
+                  >
+                    {i}
+                  </IonText>
+                </IonCardContent>
+              </IonCard>
+            </IonCol>
+            <IonCol>
+              {feedbackGroup?.feedbacks?.map((feedback, i) => {
+                if (feedback.showingModifiedTags === undefined) {
+                  feedback.showingModifiedTags = true;
+                }
+                return (
+                  <IonRow key={i}>
+                    <IonCol>
+                      <IonCard>
+                        <IonCardContent>
+                          <s-magic-text
+                            ref={(el: HTMLSMagicTextElement) => {
+                              if (el) {
+                                configMagicText(el, feedback);
                               }
-                              forceUpdate();
                             }}
-                          >
-                            <IonIcon slot="icon-only" icon={create}></IonIcon>
-                          </IonButton>
-                          <IonButton
-                            color="success"
-                            fill={
-                              feedback?.userTagsDict?.[userId] &&
-                              !feedback.editing
-                                ? "solid"
-                                : "clear"
+                          />
+                        </IonCardContent>
+                      </IonCard>
+                    </IonCol>
+                    <IonCol size="auto">
+                      <IonCard style={{ width: "auto" }}>
+                        <IonButton
+                          color="primary"
+                          fill={
+                            feedback?.showingModifiedTags ? "solid" : "clear"
+                          }
+                          title="Toggle auto/user labels"
+                          onClick={() => {
+                            feedback.showingModifiedTags =
+                              !feedback?.showingModifiedTags;
+                            feedback.editing = false;
+                            forceUpdate();
+                          }}
+                        >
+                          <IonIcon
+                            slot="icon-only"
+                            icon={swapHorizontal}
+                          ></IonIcon>
+                        </IonButton>
+                        <IonButton
+                          color="warning"
+                          fill={feedback.editing ? "solid" : "clear"}
+                          title="Edit"
+                          onClick={() => {
+                            feedback.editing = !feedback?.editing;
+                            if (
+                              feedback.editing &&
+                              feedback?.userTagsDict?.[userId]
+                            ) {
+                              feedback.currentUserTagsBackup = [
+                                ...feedback?.userTagsDict[userId],
+                              ];
+                            } else {
+                              if (feedback?.userTagsDict) {
+                                feedback.userTagsDict[userId] =
+                                  feedback.currentUserTagsBackup;
+                              }
                             }
-                            title="Submit"
-                            onClick={() => submit(feedback)}
-                          >
-                            <IonIcon
-                              slot="icon-only"
-                              icon={checkmark}
-                            ></IonIcon>
-                          </IonButton>
-                        </IonCard>
-                      </IonCol>
-                    </IonRow>
-                  );
-                })}
-              </IonCol>
-            </IonRow>
-          ))}
+                            forceUpdate();
+                          }}
+                        >
+                          <IonIcon slot="icon-only" icon={create}></IonIcon>
+                        </IonButton>
+                        <IonButton
+                          color="success"
+                          fill={
+                            feedback?.userTagsDict?.[userId] &&
+                            !feedback.editing
+                              ? "solid"
+                              : "clear"
+                          }
+                          title="Submit"
+                          onClick={() => submit(feedback)}
+                        >
+                          <IonIcon slot="icon-only" icon={checkmark}></IonIcon>
+                        </IonButton>
+                      </IonCard>
+                    </IonCol>
+                  </IonRow>
+                );
+              })}
+            </IonCol>
+          </IonRow>
+        ))}
         <IonRow style={{ height: "5rem" }}></IonRow>
       </IonGrid>
     );
