@@ -129,8 +129,8 @@ const Dashboard: React.FC = () => {
           )}
           <IonItem>
             <IonLabel position="stacked">
-              Title of the columns containing narrative feedback (split by comma
-              without space)
+              Title(s) of the column(s) containing narrative feedback (separate
+              multiple titles with commas and no following space)
             </IonLabel>
             <IonInput
               disabled={disabled}
@@ -142,7 +142,8 @@ const Dashboard: React.FC = () => {
           </IonItem>
           <IonItem>
             <IonLabel position="stacked">
-              Title of the column containing trainee names
+              Title(s) of the column(s) containing trainee names (separate
+              multiple titles with commas and no following space)
             </IonLabel>
             <IonInput
               disabled={disabled}
@@ -154,7 +155,8 @@ const Dashboard: React.FC = () => {
           </IonItem>
           <IonItem>
             <IonLabel position="stacked">
-              Title of the column containing observer names
+              Title(s) of the column(s) containing observer names (separate
+              multiple titles with commas and no following space)
             </IonLabel>
             <IonInput
               disabled={disabled}
