@@ -21,7 +21,12 @@ import {
 import { csvFormat, csvParse, DSVRowArray } from "d3-dsv";
 import { person } from "ionicons/icons";
 import { useEffect, useState } from "react";
-import { FeedbackGroup, Results, Tag } from "../utils/new-data-structure";
+import {
+  Feedback,
+  FeedbackGroup,
+  Results,
+  Tag,
+} from "../utils/new-data-structure";
 
 let pyodide: any;
 let pythonDeidentifier: any;
@@ -341,8 +346,11 @@ const Dashboard: React.FC = () => {
 
   async function loadNameDictionaryFile(useDefault?: boolean) {
     if (useDefault) {
-      const response = await fetch(`${process.env.PUBLIC_URL}/assets/nicknames.json`);
-      setNameDictionary(await response.json());
+      const response = await fetch(
+        `${process.env.PUBLIC_URL}/assets/names.csv`
+      );
+      const text = await response.text();
+      setNameDictionary(convertNameDictionaryFromCSVToObject(text));
     } else {
       const fileHandle = (await (window as any).showOpenFilePicker())?.[0];
       const file = (await fileHandle.getFile()) as File;
@@ -358,9 +366,10 @@ const Dashboard: React.FC = () => {
 
   async function exportDefaultNameDictionaryFile() {
     try {
-      const responese = await fetch(`${process.env.PUBLIC_URL}/assets/nicknames.json`);
-      const dict = await responese.json();
-      const text = convertNameDictionaryFromObjectToCSV(dict);
+      const response = await fetch(
+        `${process.env.PUBLIC_URL}/assets/names.csv`
+      );
+      const text = await response.text();
       const fileHandle = await (window as any).showSaveFilePicker({
         types: [
           {
@@ -379,26 +388,21 @@ const Dashboard: React.FC = () => {
 
   function convertNameDictionaryFromCSVToObject(content: string) {
     const entries = csvParse(content);
-    const dict: { [name: string]: string[] } = {};
-    entries.forEach(({ name, nickname }) => {
-      if (name && nickname) {
-        if (!dict[name]) {
-          dict[name] = [];
-        }
-        dict[name].push(nickname);
-      }
-    });
+    const dict: { [name: string]: string[] } = Object.fromEntries(
+      entries.map(({ name, variants }) => [name, variants?.split(" ") || []])
+    );
     return dict;
   }
 
-  function convertNameDictionaryFromObjectToCSV(dict: {
-    [name: string]: string[];
-  }) {
-    const entries = Object.entries(dict).flatMap(([name, nicknames]) =>
-      nicknames.map((nickname) => ({ name, nickname }))
-    );
-    return csvFormat(entries);
-  }
+  // function convertNameDictionaryFromObjectToCSV(dict: {
+  //   [name: string]: string[];
+  // }) {
+  //   const entries = Object.entries(dict).map(([name, variants]) => ({
+  //     name,
+  //     variants: variants?.join(" "),
+  //   }));
+  //   return csvFormat(entries);
+  // }
 
   async function saveProjectFile() {
     setTimeout(async () => {
@@ -484,7 +488,11 @@ const Dashboard: React.FC = () => {
     names: string[],
     nicknames: { [name: string]: string[] }
   ) {
-    return pythonDeidentifier(text, names, pyodide.toPy(nicknames)).toJs({
+    if(!((window as any).previousNicknames === nicknames)) {
+      (window as any).nicknamesAsPy = pyodide.toPy(nicknames);
+      (window as any).previousNicknames = nicknames;
+    }
+    return pythonDeidentifier(text, names, (window as any).nicknamesAsPy).toJs({
       dict_converter: Object.fromEntries,
     });
   }
