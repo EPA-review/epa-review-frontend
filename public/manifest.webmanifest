@@ -3,21 +3,11 @@
   "name": "EPA Deidentification",
   "icons": [
     {
-      "src": "assets/icon/favicon.png",
-      "sizes": "64x64 32x32 24x24 16x16",
-      "type": "image/x-icon"
-    },
-    {
-      "src": "assets/icon/icon_144.png",
-      "sizes": "144x144",
-      "type": "image/png"
-    },
-    {
-      "src": "assets/icon/icon.png",
-      "type": "image/png",
-      "sizes": "512x512",
-      "purpose": "maskable"
-    }
+      "src": "assets/icon/icon.svg",
+      "sizes": "16x16 24x24 32x32 48x48 64x64 72x72 96x96 128x128 192x192 256x256 512x512",
+      "type": "image/svg+xml",
+      "purpose": "any"
+  }
   ],
   "start_url": "./new",
   "display": "standalone",

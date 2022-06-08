@@ -1,0 +1,5 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewbox="0 0 500 500" perserveAspectRatio="xMidYMid meet">
+  <circle cx="250" cy="180" r="135" fill="#808080" />
+  <rect x="70" y="328" width="360" height="500" rx="50" ry="80" fill="#808080" />
+  <text x="140" y="400" font-size="460px" font-family="times" font-weight="600">?</text>
+</svg>
