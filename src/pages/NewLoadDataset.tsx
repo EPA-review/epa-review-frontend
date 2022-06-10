@@ -466,7 +466,6 @@ const Dashboard: React.FC = () => {
         residentNameColumns,
         observerNameColumns,
       },
-      nameDictionary,
       results,
     };
   }
