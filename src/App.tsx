@@ -37,6 +37,7 @@ import NewLoadDataset from "./pages/NewLoadDataset";
 import NewReview from "./pages/NewReview";
 import { User } from "./utils/User";
 import NewHome from "./pages/NewHome";
+import NewList from "./pages/NewList";
 
 const App: React.FC = () => {
   const theme = getActualTheme();
@@ -57,7 +58,7 @@ const App: React.FC = () => {
       setRouterOutlet(
         <IonRouterOutlet>
           <Route exact path="/">
-            <Redirect to="/home" />
+            <Redirect to="/new" />
           </Route>
           <Route exact path="/home">
             {signedInUser ? <Redirect to="/upload" /> : <Home />}
@@ -110,6 +111,9 @@ const App: React.FC = () => {
           </Route>
           <Route exact path="/new/review">
             <NewReview />
+          </Route>
+          <Route exact path="/new/list">
+            <NewList />
           </Route>
         </IonRouterOutlet>
       );

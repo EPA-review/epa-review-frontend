@@ -13,25 +13,30 @@ import {
   IonItem,
   IonLabel,
   IonPage,
+  IonSelect,
+  IonSelectOption,
   IonText,
   IonTitle,
   IonToggle,
   IonToolbar,
+  useIonPopover,
 } from "@ionic/react";
-import { csvFormat, csvParse, DSVRowArray } from "d3-dsv";
+import { csvParse, DSVRowArray } from "d3-dsv";
 import { person } from "ionicons/icons";
 import { useEffect, useState } from "react";
-import {
-  Feedback,
-  FeedbackGroup,
-  Results,
-  Tag,
-} from "../utils/new-data-structure";
+import UserMenu from "../components/UserMenuNew";
+import { fetchUser } from "../utils/auth";
+import { FeedbackGroup, Results, Tag } from "../utils/new-data-structure";
+import ServerInfo from "../utils/ServerInfo";
+import { User } from "../utils/User";
 
 let pyodide: any;
 let pythonDeidentifier: any;
 
 const Dashboard: React.FC = () => {
+  const [user, setUser] = useState<User>();
+  const [users, setUsers] = useState<User[]>();
+  const [sharedUserIds, setSharedUserIds] = useState<string[]>([]);
   const [shouldShowVideo, setShouldShowVideo] = useState(false);
   const [file, setFile] = useState<File>();
   const [data, setData] = useState<DSVRowArray<string>>();
@@ -46,8 +51,34 @@ const Dashboard: React.FC = () => {
   ]);
   const [processing, setProcessing] = useState(false);
 
+  const [presentUserMenuPopover, dismissUserMenuPopover] = useIonPopover(
+    UserMenu,
+    { onHide: () => dismissUserMenuPopover() }
+  );
+
   useEffect(() => {
     loadDeidentifier();
+  }, []);
+
+  useEffect(() => {
+    async function fetchAndSetUserInfo() {
+      const u = await fetchUser();
+      setUser(u);
+    }
+    fetchAndSetUserInfo();
+  }, []);
+
+  useEffect(() => {
+    async function obtainUsers() {
+      const response = await fetch(`${ServerInfo.SERVER_BASE_URL}/user/all`, {
+        credentials: "include",
+      });
+      let users: User[];
+      if (response.ok && (users = await response.json())) {
+        setUsers(users);
+      }
+    }
+    obtainUsers();
   }, []);
 
   return (
@@ -59,7 +90,13 @@ const Dashboard: React.FC = () => {
           </IonButtons>
           <IonTitle>Load Dataset</IonTitle>
           <IonButtons slot="end">
-            <IonButton title="User">
+            <IonButton
+              color={user ? "primary" : ""}
+              title="User"
+              onClick={(event) =>
+                presentUserMenuPopover({ event: event.nativeEvent })
+              }
+            >
               <IonIcon slot="icon-only" icon={person}></IonIcon>
             </IonButton>
           </IonButtons>
@@ -171,6 +208,25 @@ const Dashboard: React.FC = () => {
               }
             ></IonInput>
           </IonItem>
+          {user && (
+            <IonItem>
+              <IonLabel position="stacked">Who you want to share with?</IonLabel>
+              <IonSelect
+                multiple
+                placeholder="Select users to share with"
+                onIonChange={({ detail }) => setSharedUserIds(detail.value)}
+              >
+                {users
+                  ?.filter((u) => user._id !== u._id)
+                  .map((user) => (
+                    <IonSelectOption key={user._id} value={user._id}>
+                      {user.username}
+                    </IonSelectOption>
+                  ))}
+              </IonSelect>
+            </IonItem>
+          )}
+
           <IonText>
             Clicking 'Save the Project File' will allow you to download a
             project file to your local computer that has been formatted to allow
@@ -180,14 +236,22 @@ const Dashboard: React.FC = () => {
           <br />
           <IonButton
             disabled={disabled}
-            onClick={async () => saveProjectFile()}
+            onClick={async () => (user ? uploadToServer : saveProjectFile)()}
           >
             {processing
               ? "Processing..."
+              : user
+              ? "Deidentify and upload"
               : "Deidentify and save the project file"}
           </IonButton>
           <br />
-          <IonButton disabled={true} href="">
+          <IonButton
+            href={
+              user
+                ? `${process.env.PUBLIC_URL}/new/list`
+                : `${process.env.PUBLIC_URL}/new/review`
+            }
+          >
             Review my data
           </IonButton>
           <br />
@@ -404,7 +468,40 @@ const Dashboard: React.FC = () => {
   //   return csvFormat(entries);
   // }
 
+  async function uploadToServer() {
+    const name = prompt("Enter a name for this dataset", "");
+    if (!name) {
+      alert("The name is not valid, please try again.");
+      return;
+    }
+    setProcessing(true);
+    setTimeout(async () => {
+      const result = await processData();
+      const response = await fetch(
+        `${ServerInfo.SERVER_BASE_URL}/project/upload?name=${name}`,
+        {
+          method: "POST",
+          credentials: "include",
+          headers: {
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify({
+            data: result,
+            sharedUserIds,
+          }),
+        }
+      );
+      if (response.ok) {
+        alert("Deidentification finished and the project file is uploaded.");
+      } else if (response.status === 409) {
+        alert("The name has already been taken, please try again.");
+      }
+      setProcessing(false);
+    }, 0);
+  }
+
   async function saveProjectFile() {
+    setProcessing(true);
     setTimeout(async () => {
       const fileHandle = await (window as any).showSaveFilePicker({
         types: [
@@ -414,7 +511,6 @@ const Dashboard: React.FC = () => {
           },
         ],
       });
-      setProcessing(true);
       const writable = await fileHandle.createWritable();
       const result = await processData();
       await writable.write(JSON.stringify(result));
@@ -487,7 +583,7 @@ const Dashboard: React.FC = () => {
     names: string[],
     nicknames: { [name: string]: string[] }
   ) {
-    if(!((window as any).previousNicknames === nicknames)) {
+    if (!((window as any).previousNicknames === nicknames)) {
       (window as any).nicknamesAsPy = pyodide.toPy(nicknames);
       (window as any).previousNicknames = nicknames;
     }

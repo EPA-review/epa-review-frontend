@@ -29,6 +29,7 @@ import {
   create,
   download,
   open,
+  person,
   swapHorizontal,
 } from "ionicons/icons";
 import { useEffect, useState } from "react";
@@ -42,6 +43,10 @@ import {
   Tag,
 } from "../utils/new-data-structure";
 import * as xlsx from "xlsx";
+import ServerInfo from "../utils/ServerInfo";
+import { User } from "../utils/User";
+import { fetchUser } from "../utils/auth";
+import UserMenu from "../components/UserMenuNew";
 
 type ConfusionMatrix = {
   truePositive: number;
@@ -51,13 +56,13 @@ type ConfusionMatrix = {
 };
 
 const itemCountPerPage = 10;
-const userId = "";
 
 let fileHandle: any;
 let selectPopoverValue = "";
 let entityChangeHandler: (tagName: string) => void = () => {};
 
 const Dashboard: React.FC = () => {
+  const [user, setUser] = useState<User>();
   const [file, setFile] = useState<any>();
   const [data, setData] = useState<DeidData>();
   const [page, setPage] = useState(1);
@@ -65,6 +70,11 @@ const Dashboard: React.FC = () => {
 
   const [, forceUpdateHelper] = useState({});
   const forceUpdate = () => forceUpdateHelper({});
+
+  const [presentUserMenuPopover, dismissUserMenuPopover] = useIonPopover(
+    UserMenu,
+    { onHide: () => dismissUserMenuPopover() }
+  );
 
   const [presentSelectPopover, dismissSelectPopover] = useIonPopover(
     SelectMenu,
@@ -115,18 +125,45 @@ const Dashboard: React.FC = () => {
     }
   }, []);
 
+  useEffect(() => {
+    async function fetchAndSetData() {
+      const searchParams = new URLSearchParams(window.location.search);
+      const userId = searchParams.get("userId");
+      const name = searchParams.get("name");
+      const response = await fetch(
+        `${ServerInfo.SERVER_BASE_URL}/project?userId=${userId}&name=${name}`,
+        {
+          method: "GET",
+          credentials: "include",
+        }
+      );
+      if (response.ok) {
+        setData((await response.json()).data);
+      }
+    }
+    async function fetchAndSetUserInfo() {
+      const u = await fetchUser();
+      setUser(u);
+      if (u) {
+        fetchAndSetData();
+      }
+    }
+    fetchAndSetUserInfo();
+  }, []);
+
   const results = data?.results;
   const currentPageFeedbackGroups = results?.feedbackGroups?.slice(
     itemCountPerPage * (page - 1),
     itemCountPerPage * page
   );
+  const userId = user?._id || "";
 
   return (
     <IonPage>
       <IonHeader>
         <IonToolbar>
           <IonButtons slot="start">
-            <IonBackButton defaultHref='/new' />
+            <IonBackButton defaultHref={user ? "/new/list" : "/new"} />
           </IonButtons>
           <IonTitle>Review</IonTitle>
           <IonButtons slot="end">
@@ -138,8 +175,19 @@ const Dashboard: React.FC = () => {
             >
               <IonIcon slot="icon-only" icon={download}></IonIcon>
             </IonButton>
-            <IonButton title="Open" onClick={() => openFile()}>
-              <IonIcon slot="icon-only" icon={open}></IonIcon>
+            {!user && (
+              <IonButton title="Open" onClick={() => openFile()}>
+                <IonIcon slot="icon-only" icon={open}></IonIcon>
+              </IonButton>
+            )}
+            <IonButton
+              color={user ? "primary" : ""}
+              title="User"
+              onClick={(event) =>
+                presentUserMenuPopover({ event: event.nativeEvent })
+              }
+            >
+              <IonIcon slot="icon-only" icon={person}></IonIcon>
             </IonButton>
           </IonButtons>
         </IonToolbar>
@@ -484,9 +532,29 @@ const Dashboard: React.FC = () => {
   async function submit(feedback: Feedback) {
     feedback.editing = false;
     initializeUserTagsDict(feedback, userId, feedback.tags || []);
-    const writable = await fileHandle.createWritable();
-    await writable.write(JSON.stringify(obtainCleanedData()));
-    await writable.close();
+    if (user) {
+      const searchParams = new URLSearchParams(window.location.search);
+      const userId = searchParams.get("userId");
+      const name = searchParams.get("name");
+      const response = await fetch(
+        `${ServerInfo.SERVER_BASE_URL}/project?userId=${userId}&name=${name}`,
+        {
+          method: "PUT",
+          credentials: "include",
+          headers: {
+            "Content-type": "application/json",
+          },
+          body: JSON.stringify(obtainCleanedData()),
+        }
+      );
+      if (!response.ok) {
+        alert("Fail to update.");
+      }
+    } else {
+      const writable = await fileHandle.createWritable();
+      await writable.write(JSON.stringify(obtainCleanedData()));
+      await writable.close();
+    }
     forceUpdate();
   }
 
