@@ -595,14 +595,47 @@ const Dashboard: React.FC = () => {
 
   async function exportDeidentifiedOriginalFile(userId: string) {
     if (confirmIfNotAllRecordsAreReviewed()) {
+      const residentNameMap = new Map<string, number>();
+      const observerNameMap = new Map<string, number>();
       const deidentifiedData = data?.rawData?.map((record, recordIndex) => {
         const result = record;
+
+        const observerNameTag = data?.config?.observerNameColumns
+          ?.map((columnName) => record[columnName])
+          ?.join("&&");
+        let observerIndex = observerNameTag
+          ? observerNameMap.get(observerNameTag)
+          : undefined;
+        if (observerIndex === undefined) {
+          observerIndex = observerNameMap.size;
+          observerNameMap.set(
+            observerNameTag || `invalid-${recordIndex}`,
+            observerIndex
+          );
+        }
         data?.config?.observerNameColumns?.forEach(
-          (columnName) => (result[columnName] = recordIndex.toString())
+          (columnName) =>
+            (result[columnName] = observerIndex?.toString() || "N/A")
         );
+
+        const residentNameTag = data?.config?.residentNameColumns
+          ?.map((columnName) => record[columnName])
+          ?.join("&&");
+        let residentIndex = residentNameTag
+          ? residentNameMap.get(residentNameTag)
+          : undefined;
+        if (residentIndex === undefined) {
+          residentIndex = residentNameMap.size;
+          residentNameMap.set(
+            residentNameTag || `invalid-${recordIndex}`,
+            residentIndex
+          );
+        }
         data?.config?.residentNameColumns?.forEach(
-          (columnName) => (result[columnName] = recordIndex.toString())
+          (columnName) =>
+            (result[columnName] = residentIndex?.toString() || "N/A")
         );
+
         data?.config?.feedbackColumns?.forEach((columnName, columnIndex) => {
           const feedback =
             data?.results?.feedbackGroups?.[recordIndex]?.feedbacks?.[
