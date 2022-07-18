@@ -19,6 +19,7 @@ import {
   IonTitle,
   IonToggle,
   IonToolbar,
+  useIonAlert,
   useIonPopover,
 } from "@ionic/react";
 import { csvParse, DSVRowArray } from "d3-dsv";
@@ -55,6 +56,7 @@ const Dashboard: React.FC = () => {
     UserMenu,
     { onHide: () => dismissUserMenuPopover() }
   );
+  const [presentAlert] = useIonAlert();
 
   useEffect(() => {
     loadDeidentifier();
@@ -210,7 +212,9 @@ const Dashboard: React.FC = () => {
           </IonItem>
           {user && (
             <IonItem>
-              <IonLabel position="stacked">Who you want to share with?</IonLabel>
+              <IonLabel position="stacked">
+                Who you want to share with?
+              </IonLabel>
               <IonSelect
                 multiple
                 placeholder="Select users to share with"
@@ -236,7 +240,23 @@ const Dashboard: React.FC = () => {
           <br />
           <IonButton
             disabled={disabled}
-            onClick={async () => (user ? uploadToServer : saveProjectFile)()}
+            onClick={async () => {
+              presentAlert({
+                header:
+                  "This action may take some time (up to minutes) for large datasets, are you sure to continue?",
+                buttons: [
+                  {
+                    text: "No",
+                    role: "cancel",
+                  },
+                  {
+                    text: "Yes",
+                    role: "confirm",
+                    handler: () => (user ? uploadToServer : saveProjectFile)(),
+                  },
+                ],
+              });
+            }}
           >
             {processing
               ? "Processing..."
