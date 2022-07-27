@@ -598,7 +598,7 @@ const Dashboard: React.FC = () => {
       const residentNameMap = new Map<string, number>();
       const observerNameMap = new Map<string, number>();
       const deidentifiedData = data?.rawData?.map((record, recordIndex) => {
-        const result = record;
+        const result = { ...record };
 
         const observerNameTag = data?.config?.observerNameColumns
           ?.map((columnName) => record[columnName])
@@ -643,11 +643,17 @@ const Dashboard: React.FC = () => {
             ];
           result[columnName] = anonymizeText(
             result?.[columnName] || "",
-            feedback?.userTagsDict?.[userId].map((tag) => ({
-              ...tag,
-            })) || []
+            (feedback?.userTagsDict?.[userId] || feedback?.tags)?.map(
+              (tag) => ({
+                ...tag,
+              })
+            ) || []
           );
+          if (!feedback?.userTagsDict?.[userId]) {
+            result["not_confirmed"] = "true";
+          }
         });
+
         return result;
       });
       const csvString = csvFormat(deidentifiedData || []);
