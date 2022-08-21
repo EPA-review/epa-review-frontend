@@ -5,6 +5,7 @@ from string import whitespace
 #from SimpleAnonymizer import AnonymizeWord, SetAnonFlag
 from typing import List
 
+
 class Serializable:
     def serialize(self):
         return {}
@@ -563,7 +564,18 @@ def AnonymizeWord(W, P, N, Names, Nicknames, F):
                     _name = name.lower();
                     if _result == _original and (not _contractionFlag):
                         _result = AnonymizeWord_Name(_result, _name)
-                        # print(result)
+                        # if the length of the name is 1 (an initial) than the next word must also be a name
+                        if len(_name) == 1:
+                            _next = next
+                            _prev = previous
+                            for name2 in Names:
+                                _next = AnonymizeWord_Name(_next, name2)
+                                _prev = AnonymizeWord_Name(_prev, name2)
+                            if _next != "NAME" and _prev != "NAME":
+                                # reset the word back to the original value
+                                _result = original
+
+                    # print(result)
 
                     if _contractionFlag:
                         _temp = _original[:len(_original)-1]
@@ -619,6 +631,7 @@ SetAnonFlag takes the word and determines if it is a title. If so then the next 
 """
 def AnonymizeText(T, Names, NickNames):
     _result = []
+    _outputTest = ""
     _words = extractWords(T)
 
     nicknamesWithLowercaseKeys = dict((k.lower(), v) for k, v in NickNames.items())
@@ -649,7 +662,7 @@ def AnonymizeText(T, Names, NickNames):
         _end = w.end
         resultAsDict = {"start":_start,"end":_end,"label":""}
 
-        if (index + 1 < len(_words)):
+        if index + 1 < len(_words):
             _next = _words[index + 1].label
         else:
             next = None
@@ -658,20 +671,24 @@ def AnonymizeText(T, Names, NickNames):
 
         if _anonWord is None:
             output = "None"
-            #_result = _result + " " + w
+            if verbose:
+                _outputTest = _outputTest + " " + w.label
         else:
             output = _anonWord
-            #_result = _result + " " + output
+            if verbose:
+                _outputTest = _outputTest + " " + output
             resultAsDict["label"] = output
             _result.append(resultAsDict)
 
         _flag = SetAnonFlag(_label, _flag)
 
-        # print("word = " + w.label + ", result = " + output + ", flag = " + str(_flag) + ", start = " + str(_start) + ", end = " + str(_end))
+        if verbose:
+            print("word = " + w.label + ", result = " + _outputTest + ", flag = " + str(_flag) + ", start = " + str(_start) + ", end = " + str(_end))
         prev = _label
         index = index + 1
 
-    #print("anonymized text = " + _result)
+    if verbose:
+        print("anonymized text = " + _outputTest)
     return _result
 
 """
@@ -751,17 +768,16 @@ result = ""
 flag = False
 """
 def Test():
-    text = 'I\' m a fool of a took. Dr.  Wilson\'s. Dr P Wilson, . Jay as discussed Dr. A Henderson think you need to work on strategies to help you ensure that you are completing full reassessments including being aware of what results or tests that you have ordered are still outstanding. You also would improve by being more mindful of timing to reassess patients. Your patient care was very EB and you are quite good at accessing relevant guidelines and critically thinking your way through them as they would apply to your particular patient. wasn\'t'
-    text = 'Rick\'s doctor that Excellent management of a chest pain that was going to be placed in the waiting room.  Dr Benjamin recognized the STEMI in a timely manner, began appropriate treatment and had to advocate for STAT transfer to university hospital due to a significant back log of transfers.'
-    names = ['Richard','Wilson','Joanna','Smith']
+    text = 'Robert of a simism, but Robert A Wilson had a completely stable patient, and approached it like a resus'
+    names = ['Robert','A','Wilson']
     nicknames = {"richard":['rick','ricky','richie','dick'],
                  "stewart":['stu'],
                  "samuel":['sam','sammy'],
                  "elizabeth":['elle', 'liz'],
                  "jason":['jay']
                 }
-    AnonymizeText(text,names,nicknames)
-
+    output = AnonymizeText(text,names,nicknames)
+    print(output)
 
 
 def analyzeText(text: str, names: List[str]):
@@ -787,6 +803,7 @@ def analyzeText(text: str, names: List[str]):
             result.append(textSegment)
 
     return result
+
 
 def extractWords(text: str):
     words: List[TextSegment] = []
@@ -815,5 +832,7 @@ def serializeList(myList: List[Serializable]):
 
 
 # comment this out when the test is not needed
-#Test(result, flag)
-#Test()
+verbose = False
+#testing = False
+#if testing:
+#    Test()
