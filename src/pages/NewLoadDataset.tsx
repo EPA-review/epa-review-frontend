@@ -231,12 +231,21 @@ const Dashboard: React.FC = () => {
             </IonItem>
           )}
 
-          <IonText>
-            Clicking 'Save the Project File' will allow you to download a
-            project file to your local computer that has been formatted to allow
-            deidentification. Please save it somewhere accessible then click
-            'Deidentify and review my Data'
-          </IonText>
+          {user ? (
+            <IonText>
+              Clicking 'Deidentify and Upload' will deidentify your data and
+              upload it to our server. After this has been done, select 'Review
+              my Data' to begin reviewing your deidentified dataset.
+            </IonText>
+          ) : (
+            <IonText>
+              Clicking 'Deidentify and Save the Project File' will allow you to
+              download a project file to your local computer that has been
+              formatted to allow deidentification. Please save it somewhere
+              accessible then click 'Review my Data' to begin reviewing your
+              deidentified dataset.
+            </IonText>
+          )}
           <br />
           <IonButton
             disabled={disabled}
