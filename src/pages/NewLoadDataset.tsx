@@ -550,17 +550,22 @@ const Dashboard: React.FC = () => {
   }
 
   async function processData() {
-    const records = data?.map((record) => ({
-      feedbackTexts: feedbackColumns?.map((columnName) => record[columnName]),
-      residentNames:
-        residentNameColumns?.flatMap(
-          (columName) => record[columName]?.match(/\w+/g) || []
-        ) || [],
-      observerNames:
-        observerNameColumns?.flatMap(
-          (columName) => record[columName]?.match(/\w+/g) || []
-        ) || [],
-    }));
+    debugger
+    const records = data
+      ?.filter((record) =>
+        feedbackColumns?.some((columnName) => record[columnName])
+      )
+      ?.map((record) => ({
+        feedbackTexts: feedbackColumns?.map((columnName) => record[columnName]),
+        residentNames:
+          residentNameColumns?.flatMap(
+            (columName) => record[columName]?.match(/\w+/g) || []
+          ) || [],
+        observerNames:
+          observerNameColumns?.flatMap(
+            (columName) => record[columName]?.match(/\w+/g) || []
+          ) || [],
+      }));
     const results: Results = {
       feedbackGroups: (await Promise.all(
         (records || []).map(async (record, i) => {
