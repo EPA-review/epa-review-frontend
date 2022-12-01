@@ -64,21 +64,34 @@ const NewHome: React.FC = () => {
           <IonCardContent>
             <IonText>
               <p>
-                Local mode allows you to deidentify and review narrative EPA
-                assessment data without the data leaving your computer.{" "}
-                <b>
-                  When using local mode, all actions will be done on your
-                  computer and no data will be uploaded or stored.
-                </b>{" "}
-                Instead, all actions will be done on your local computer.
+                Our data deidentification tool has two modes: local mode and
+                cloud mode.
               </p>
               <p>
-                To use Local Mode you will need a spreadsheet saved as a CSV
-                file containing at least three columns: the name of the trainee,
-                the name of the observer, and the narrative assessment data. To
-                get started, click 'Format and deidentify a new dataset' and
-                follow the instructions. The results can then be reviewed or
-                downloaded by clicking 'Review my deidentified data'.
+                Local mode allows you to deidentify and review narrative EPA
+                assessment data without the data leaving your computer. When
+                using local mode, all actions will be done on your computer and
+                no data will be uploaded or stored. Instead, all actions will be
+                done on your local computer. We recommend this for users who are
+                not from the University of Saskatchewan. By default, users who
+                do not login are using local mode.
+              </p>
+              <p>
+                Cloud mode transfers your narrative EPA assessment data to our
+                servers for both deidentification and review. When using cloud
+                mode, your data and its deidentified version are being stored on
+                our servers. We recommend this for users who are from the
+                University of Saskatchewan. To use cloud mode simply login by
+                clicking the icon in the top right hand corner of this page.
+              </p>
+              <p>
+                Both versions allow you to deidentify your narrative EPA
+                assessments in multiple sessions and require you to have your
+                data saved as a CSV spreadsheet containing at least three
+                columns: the name of the trainee, the name of the observer, and
+                the narrative assessment data. Please see the video below for
+                more information on local mode (if you have not logged in) or
+                cloud mode (if you have not logged in).
               </p>
             </IonText>
             <br />
@@ -90,17 +103,28 @@ const NewHome: React.FC = () => {
               <IonLabel>Show Video</IonLabel>
             </IonItem>
             <br />
-            {shouldShowVideo && (
-              <iframe
-                width="560"
-                height="315"
-                src="https://www.youtube.com/embed/7r0H__HyHBk?start=35"
-                title="YouTube video player"
-                frameBorder="0"
-                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-                allowFullScreen
-              ></iframe>
-            )}
+            {shouldShowVideo &&
+              (user ? (
+                <iframe
+                  width="560"
+                  height="315"
+                  src="https://www.youtube.com/embed/cwZt1hq0cnI"
+                  title="YouTube video player"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                ></iframe>
+              ) : (
+                <iframe
+                  width="560"
+                  height="315"
+                  src="https://www.youtube.com/embed/jvbwTCzcLXI?start=54"
+                  title="YouTube video player"
+                  frameBorder="0"
+                  allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                  allowFullScreen
+                ></iframe>
+              ))}
           </IonCardContent>
         </IonCard>
         <IonGrid>

@@ -410,17 +410,28 @@ const Dashboard: React.FC = () => {
             />
             <IonLabel>Show Video</IonLabel>
           </IonItem>
-          {shouldShowVideo && (
-            <iframe
-              width="560"
-              height="315"
-              src="https://www.youtube.com/embed/qhlO9lXRZMg?start=103"
-              title="YouTube video player"
-              frameBorder="0"
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
-              allowFullScreen
-            ></iframe>
-          )}
+          {shouldShowVideo &&
+            (user ? (
+              <iframe
+                width="560"
+                height="315"
+                src="https://www.youtube.com/embed/cwZt1hq0cnI?start=37"
+                title="YouTube video player"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></iframe>
+            ) : (
+              <iframe
+                width="560"
+                height="315"
+                src="https://www.youtube.com/embed/jvbwTCzcLXI?start=54"
+                title="YouTube video player"
+                frameBorder="0"
+                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                allowFullScreen
+              ></iframe>
+            ))}
         </IonCardContent>
       </IonCard>
     );
@@ -550,7 +561,6 @@ const Dashboard: React.FC = () => {
   }
 
   async function processData() {
-    debugger
     const records = data
       ?.filter((record) =>
         feedbackColumns?.some((columnName) => record[columnName])
