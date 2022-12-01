@@ -402,7 +402,8 @@ const Dashboard: React.FC = () => {
     return (
       <IonCard>
         <IonCardContent>
-          <IonText>Some text...</IonText>
+          {/* TODO adding texts here */}
+          {/* <IonText>TODO </IonText> */}
           <IonItem>
             <IonToggle
               checked={shouldShowVideo}
