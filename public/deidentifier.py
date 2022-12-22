@@ -3,8 +3,7 @@
 import re
 from string import whitespace
 #from SimpleAnonymizer import AnonymizeWord, SetAnonFlag
-from typing import List
-
+from typing import List, NamedTuple
 
 class Serializable:
     def serialize(self):
@@ -26,10 +25,11 @@ class TextSegment(Serializable):
 
 # Nicknames are not passed into the call to AnonymizeText
 #_nicknames = ['rick', 'ricky', 'richie', 'dick', 'stu', 'elle', 'liz', 'jay', 'kat', 'cat']
-_ignore = ['you', 'male', 'female', 'epa', 'e.g.', 'eg', 'i.e.', 'ie']
+_ignore = ['you', 'male', 'female', 'epa', 'e.g.', 'eg', 'i.e.', 'ie', 'the']
 _overrides = ['who', 'that', 'to', 'then', 'than']
 _acronyms = ['epa','stemi']
-_badSymbols = ['/', '\\', '#', '$', ':']
+_badSymbols = ['/', '\'', '#', '$', ':', '(', ')', '{', '}', '[', ']']
+
 
 """
 Inputs:
@@ -573,7 +573,7 @@ def AnonymizeWord(W, P, N, Names, Nicknames, F):
                                 _prev = AnonymizeWord_Name(_prev, name2)
                             if _next != "NAME" and _prev != "NAME":
                                 # reset the word back to the original value
-                                _result = original
+                                _result = _original
 
                     # print(result)
 
@@ -652,7 +652,6 @@ def AnonymizeText(T, Names, NickNames):
     _flag = False
     index = 0
     for w in _words:
-
         #end = whitespaces[index]
         #tmp = T[start:end]
         #print(tmp)
@@ -767,17 +766,6 @@ def Test(R, F):
 result = ""
 flag = False
 """
-def Test():
-    text = 'Robert of a simism, but Robert A Wilson had a completely stable patient, and approached it like a resus'
-    names = ['Robert','A','Wilson']
-    nicknames = {"richard":['rick','ricky','richie','dick'],
-                 "stewart":['stu'],
-                 "samuel":['sam','sammy'],
-                 "elizabeth":['elle', 'liz'],
-                 "jason":['jay']
-                }
-    output = AnonymizeText(text,names,nicknames)
-    print(output)
 
 
 def analyzeText(text: str, names: List[str]):
@@ -811,28 +799,60 @@ def extractWords(text: str):
     currentWord: str = ''
     for i in range(len(text)):
         character = text[i]
-        match = re.match('[\w\'/]+', character)
-        if match:
-            currentWord += character
-            if startIndex is None:
-                startIndex = i
-            if i == len(text) - 1:
+        if not (character in _badSymbols):
+            match = re.match('[\w\'/]+', character)
+            if match:
+                currentWord += character
+                if startIndex is None:
+                    startIndex = i
+                if i == len(text) - 1:
+                    words.append(TextSegment(startIndex, i, currentWord))
+                    currentWord = ''
+                    startIndex = None
+            elif startIndex is not None:
                 words.append(TextSegment(startIndex, i, currentWord))
                 currentWord = ''
                 startIndex = None
-        elif startIndex is not None:
-            words.append(TextSegment(startIndex, i, currentWord))
-            currentWord = ''
-            startIndex = None
     return words
 
 
 def serializeList(myList: List[Serializable]):
     return list(map(lambda item: item.serialize(), myList))
 
+def Test():
+    text = 'EPA completed by Dr. A. McConnell on ID rotation \r\nSubmitted on Oct 22 for week of Sept 4-7 \r\nNeeded to review the microbiology of the infection and characteristics of the appropriate antibiotic for the infection.'
+    names = ['Grayson', 'Wilson', 'Lynsey', 'Martin']
+    nicknames = {"richard":['rick','ricky','richie','dick'],
+                 "stewart":['stu'],
+                 "samuel":['sam','sammy'],
+                 "elizabeth":['elle', 'liz'],
+                 "jason":['jay']
+                }
+    output = AnonymizeText(text,names,nicknames)
+    print(output)
+
+def Test2():
+    TestCase = NamedTuple('Test', [('text', str), ('names', List[str])])
+
+    tests: List[TestCase] = [
+        TestCase("Kedra saw a homeless man who was brought in by police after being found passed out in the snow.  The patient was being belligerent and threatening to leave.  The nurses suggested the patient go to the WR or be discharged as they are a 'friendly face' of the ED and they suspected he was behavioral.  Kedra was unsure how to approach this situation and needed help, so I talked her through how to approach it.  In these situations, if patients have capacity to make decisions about their care (they can repeat back to you the consequences of leaving), you can discharge them.  If they don't and try to leave, you can invoke the substitute decision maker act to hold them until they are medically clear or have capacity.",
+            ['Kedra', 'Ann', 'Peterson', 'Robert', 'A', 'Woods']
+        )
+    ]
+    nicknames = {
+        'Seyara': ['Sey']
+    }
+
+    for test in tests:
+        text = test.text
+        names = test.names
+        result = AnonymizeText(text, names, nicknames)
+        print(result)
+
 
 # comment this out when the test is not needed
 verbose = False
-#testing = False
-#if testing:
-#    Test()
+testing = False
+if testing:
+    Test()
+    Test2()
