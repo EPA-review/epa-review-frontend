@@ -17,7 +17,7 @@
     {
       "action": "./new/review",
       "accept": {
-        "application/vnd.epadeid+json": [".deid"]
+        "application/json": [".deid"]
       }
     }
   ]
