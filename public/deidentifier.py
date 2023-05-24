@@ -666,10 +666,6 @@ def AnonymizeText(T, Names, NickNames):
         else:
             next = None
 
-        wordLength = len(_label)
-        if (_label[wordLength-2::1] == '\'s'):
-            _label = _label[:wordLength-2:1]
-
         _anonWord = AnonymizeWord(_label, prev, _next, Names, nicknamesWithLowercaseKeys, _flag)
 
         if _anonWord is None:
@@ -770,17 +766,6 @@ def Test(R, F):
 result = ""
 flag = False
 """
-def Test():
-    text = 'Richard\'s Rick\'s EPA completed by Dr. A. McConnell on ID rotation \r\nSubmitted on Oct 22 for week of Sept 4-7 \r\nNeeded to review the microbiology of the infection and characteristics of the appropriate antibiotic for the infection.'
-    names = ['Richard', 'Wilson', 'Lynsey', 'Martin']
-    nicknames = {"richard":['rick','ricky','richie','dick'],
-                 "stewart":['stu'],
-                 "samuel":['sam','sammy'],
-                 "elizabeth":['elle', 'liz'],
-                 "jason":['jay']
-                }
-    output = AnonymizeText(text,names,nicknames)
-    print(output)
 
 
 def analyzeText(text: str, names: List[str]):
@@ -812,9 +797,7 @@ def extractWords(text: str):
     words: List[TextSegment] = []
     startIndex: int = None
     currentWord: str = ''
-    textLength = len(text);
-    i = 0
-    while i < textLength:
+    for i in range(len(text)):
         character = text[i]
         if not (character in _badSymbols):
             match = re.match('[\w\'/]+', character)
@@ -830,15 +813,6 @@ def extractWords(text: str):
                 words.append(TextSegment(startIndex, i, currentWord))
                 currentWord = ''
                 startIndex = None
-            i = i + 1
-        elif (character == '\''):
-            if (i+1 < len(text)):
-                if (text[i+1] == 's'):
-                    currentWord += character + text[i+1];
-                    i = i + 3;
-                    words.append(TextSegment(startIndex, i, currentWord))
-                    currentWord = ''
-                    startIndex = None
     return words
 
 
@@ -846,8 +820,8 @@ def serializeList(myList: List[Serializable]):
     return list(map(lambda item: item.serialize(), myList))
 
 def Test():
-    text = 'Richard\'s Rick\'s EPA completed by Dr. A. McConnell on ID rotation \r\nSubmitted on Oct 22 for week of Sept 4-7 \r\nNeeded to review the microbiology of the infection and characteristics of the appropriate antibiotic for the infection.'
-    names = ['Richard', 'Wilson', 'Lynsey', 'Martin']
+    text = 'EPA completed by Dr. A. McConnell on ID rotation \r\nSubmitted on Oct 22 for week of Sept 4-7 \r\nNeeded to review the microbiology of the infection and characteristics of the appropriate antibiotic for the infection.'
+    names = ['Grayson', 'Wilson', 'Lynsey', 'Martin']
     nicknames = {"richard":['rick','ricky','richie','dick'],
                  "stewart":['stu'],
                  "samuel":['sam','sammy'],
@@ -881,4 +855,4 @@ verbose = False
 testing = False
 if testing:
     Test()
-#    Test2()
+    Test2()
