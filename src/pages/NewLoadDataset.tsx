@@ -562,6 +562,7 @@ const Dashboard: React.FC = () => {
   }
 
   async function processData() {
+    const startTime = new Date();
     const records = data
       ?.filter((record) =>
         feedbackColumns?.some((columnName) => record[columnName])
@@ -600,6 +601,9 @@ const Dashboard: React.FC = () => {
         })
       )) as FeedbackGroup[],
     };
+    console.log(
+      `Processing time elapsed ${new Date().getTime() - startTime.getTime()} ms.`
+    );
     return {
       rawData: data,
       config: {
