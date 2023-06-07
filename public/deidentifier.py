@@ -666,6 +666,10 @@ def AnonymizeText(T, Names, NickNames):
         else:
             next = None
 
+        wordLength = len(_label)
+        if (_label[wordLength-2::1] == '\'s'):
+            _label = _label[:wordLength-2:1]
+
         _anonWord = AnonymizeWord(_label, prev, _next, Names, nicknamesWithLowercaseKeys, _flag)
 
         if _anonWord is None:
@@ -797,7 +801,9 @@ def extractWords(text: str):
     words: List[TextSegment] = []
     startIndex: int = None
     currentWord: str = ''
-    for i in range(len(text)):
+    textLength = len(text);
+    i = 0
+    while i < textLength:
         character = text[i]
         if not (character in _badSymbols):
             match = re.match('[\w\'/]+', character)
@@ -813,6 +819,20 @@ def extractWords(text: str):
                 words.append(TextSegment(startIndex, i, currentWord))
                 currentWord = ''
                 startIndex = None
+            i = i + 1
+        elif (character == '\''):
+            if (i+1 < len(text)):
+                if (text[i+1] == 's'):
+                    currentWord += character + text[i+1];
+                    i = i + 3;
+                    words.append(TextSegment(startIndex, i, currentWord))
+                    currentWord = ''
+                    startIndex = None
+                else:
+                    currentWord += character + text[i+1];
+                    i = i + 2;
+        else:
+            i = i + 1
     return words
 
 
@@ -820,8 +840,9 @@ def serializeList(myList: List[Serializable]):
     return list(map(lambda item: item.serialize(), myList))
 
 def Test():
-    text = 'EPA completed by Dr. A. McConnell on ID rotation \r\nSubmitted on Oct 22 for week of Sept 4-7 \r\nNeeded to review the microbiology of the infection and characteristics of the appropriate antibiotic for the infection.'
-    names = ['Grayson', 'Wilson', 'Lynsey', 'Martin']
+    #text = 'Tom thinks this isn\'t a great idea. D/W.'
+    text = 'Richard\'s Rick\'s EPA completed by Dr. A. McConnell on ID rotation \r\nSubmitted on Oct 22 for week of Sept 4-7 \r\nNeeded to review the microbiology of the infection and characteristics of the appropriate antibiotic for the infection.'
+    names = ['Richard', 'Wilson', 'Lynsey', 'Martin']
     nicknames = {"richard":['rick','ricky','richie','dick'],
                  "stewart":['stu'],
                  "samuel":['sam','sammy'],
@@ -835,9 +856,18 @@ def Test2():
     TestCase = NamedTuple('Test', [('text', str), ('names', List[str])])
 
     tests: List[TestCase] = [
-        TestCase("Kedra saw a homeless man who was brought in by police after being found passed out in the snow.  The patient was being belligerent and threatening to leave.  The nurses suggested the patient go to the WR or be discharged as they are a 'friendly face' of the ED and they suspected he was behavioral.  Kedra was unsure how to approach this situation and needed help, so I talked her through how to approach it.  In these situations, if patients have capacity to make decisions about their care (they can repeat back to you the consequences of leaving), you can discharge them.  If they don't and try to leave, you can invoke the substitute decision maker act to hold them until they are medically clear or have capacity.",
+        TestCase('Tom thinks this isn\'t a great idea. D/W.', ['Tom']),
+        TestCase('Managed the resp distress, approp ddx, proper interp of ABG, Discussed disposition, tx', [
+            'Someone']),
+        TestCase(
+            'EPA completed by Dr. A. McConnell on ID rotation \r\nSubmitted on Oct 22 for week of Sept 4-7 \r\nNeeded to review the microbiology of the infection and characteristics of the appropriate antibiotic for the infection.',
+            ['Grayson', 'Wilson', 'Lynsey', 'Martin']),
+        TestCase('Sey successfully managed a first presentation single seizure patient',
+                 ['Seyara', 'Shwetz', 'Schaana', 'Van', 'De', 'Kamp']),
+        TestCase(
+            "Kedra saw a homeless man who was brought in by police after being found passed out in the snow.  The patient was being belligerent and threatening to leave.  The nurses suggested the patient go to the WR or be discharged as they are a 'friendly face' of the ED and they suspected he was behavioral.  Kedra was unsure how to approach this situation and needed help, so I talked her through how to approach it.  In these situations, if patients have capacity to make decisions about their care (they can repeat back to you the consequences of leaving), you can discharge them.  If they don't and try to leave, you can invoke the substitute decision maker act to hold them until they are medically clear or have capacity.",
             ['Kedra', 'Ann', 'Peterson', 'Robert', 'A', 'Woods']
-        )
+            )
     ]
     nicknames = {
         'Seyara': ['Sey']
@@ -854,5 +884,6 @@ def Test2():
 verbose = False
 testing = False
 if testing:
-    Test()
-    Test2()
+    #Test()
+    #Test2()
+    pass
